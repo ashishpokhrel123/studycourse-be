@@ -1,0 +1,13 @@
+node_modules/
+uploads/
+vendor/
+.env*
+.git/
+.cache/
+.tmp/
+.sass-cache/
+**tests**/
+*.log
+README.md
+CHANGELOG.md
+**dist/**

@@ -1,0 +1,31 @@
+runtime: nodejs18
+
+env_variables:
+  POSTGRES_HOST: $(ref:projects/${PROJECT_ID}/secrets/postgres-host/versions/latest)
+  POSTGRES_DATABASE: $(ref:projects/${PROJECT_ID}/secrets/postgres-database/versions/latest)
+  POSTGRES_USER: $(ref:projects/${PROJECT_ID}/secrets/postgres-user/versions/latest)
+  POSTGRES_PASSWORD: $(ref:projects/${PROJECT_ID}/secrets/postgres-password/versions/latest)
+  JWT_SECRET: $(ref:projects/${PROJECT_ID}/secrets/JWT_SECRET/versions/latest)
+  JWT_REFRESH: $(ref:projects/${PROJECT_ID}/secrets/JWT_REFRESH/versions/latest)
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  cpu_utilization:
+    target_utilization: 0.7
+
+handlers:
+  - url: /.*
+    secure: always
+    script: auto
+
+entrypoint:
+  - npm install
+  - npm run migrations
+  - npm start
+
+health_checks:
+  readiness_probe:
+    path: /health
+    interval: 15s
+    timeout: 5s
