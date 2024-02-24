@@ -1,4 +1,4 @@
-runtime: nodejs20
+runtime: nodejs16
 service: server
 
 env_variables:
