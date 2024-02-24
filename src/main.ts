@@ -35,7 +35,7 @@ async function bootstrap() {
   });
   app.use(cookieParser());
 
-  const port = 3001; // Choose your desired port
+  const port = process.env.PORT || 3001; 
   await app.listen(port);
 
   Logger.log(
