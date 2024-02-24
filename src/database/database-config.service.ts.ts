@@ -19,7 +19,7 @@ class DatabaseConfigService {
 private async resolveSecretReference(ref: string): Promise<string> {
     if (ref.startsWith('$(ref:projects/')) {
         const secretName = ref.match(/\$\(\S*\/secrets\/(\S*)\/versions\/latest\)/)[1];
-        const projectId = process.env.PROJECT_ID;  // Get the project ID from the environment
+        const projectId = "calm-edge-415106";
 
         // Ensure projectId is not empty before proceeding
         if (!projectId) {
