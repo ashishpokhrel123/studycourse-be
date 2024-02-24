@@ -30,9 +30,29 @@ class DatabaseConfigService {
   }
 
   public getTypeOrmConfig(): TypeOrmModuleOptions {
+    if (this.isProduction()) {
+      return this.getProductionTypeOrmConfig();
+    } else {
+      return this.getDevelopmentTypeOrmConfig();
+    }
+  }
+
+  private getProductionTypeOrmConfig(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
-      host: this.getValue('POSTGRES_HOST'),
+      host: process.env.GAE_DB_ADDRESS || '',
+      port: parseInt(this.getValue('POSTGRES_PORT')),
+      username: this.getValue('POSTGRES_USER'),
+      password: this.getValue('POSTGRES_PASSWORD') || '',
+      database: this.getValue('POSTGRES_DATABASE'),
+      autoLoadEntities: true,
+    };
+  }
+
+  private getDevelopmentTypeOrmConfig(): TypeOrmModuleOptions {
+    return {
+      type: 'postgres',
+      host: '127.0.0.1',
       port: parseInt(this.getValue('POSTGRES_PORT')),
       username: this.getValue('POSTGRES_USER'),
       password: this.getValue('POSTGRES_PASSWORD') || '',
@@ -52,7 +72,6 @@ class DatabaseConfigService {
       migrationsTableName: 'migrations',
       entities: [join(__dirname, '../common/entities/**/*{.ts,.js}')],
       migrations: ['libs/migrations/*.ts'],
-      
     };
   }
 }

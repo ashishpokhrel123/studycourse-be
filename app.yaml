@@ -1,23 +1,5 @@
-runtime: nodejs18
+runtime: nodejs20
+service: server
 
 env_variables:
-  POSTGRES_HOST: $(ref:projects/${PROJECT_ID}/secrets/postgres-host/versions/latest)
-  POSTGRES_DATABASE: $(ref:projects/${PROJECT_ID}/secrets/postgres-database/versions/latest)
-  POSTGRES_USER: $(ref:projects/${PROJECT_ID}/secrets/postgres-user/versions/latest)
-  POSTGRES_PASSWORD: $(ref:projects/${PROJECT_ID}/secrets/postgres-password/versions/latest)
-  JWT_SECRET: $(ref:projects/${PROJECT_ID}/secrets/JWT_SECRET/versions/latest)
-  JWT_REFRESH: $(ref:projects/${PROJECT_ID}/secrets/JWT_REFRESH/versions/latest)
-
-automatic_scaling:
-  min_instances: 1
-  max_instances: 10
-
-handlers:
-  - url: /.*
-    secure: always
-    script: auto
-
-entrypoint:
-  - npm install
-  - npm run migrations
-  - npm start
+  GAE_DB_ADDRESS: '/cloudsql/calm-edge-415106:us-central1:education-site'
