@@ -16,14 +16,22 @@ class DatabaseConfigService {
     return version.payload?.data?.toString() || '';
   }
 
-  private async resolveSecretReference(ref: string): Promise<string> {
+private async resolveSecretReference(ref: string): Promise<string> {
     if (ref.startsWith('$(ref:projects/')) {
-      const secretName = ref.match(/\$\(\S*\/secrets\/(\S*)\/versions\/latest\)/)[1];
-      return await this.getSecretValue(`projects/YOUR_PROJECT_ID/secrets/${secretName}/versions/latest`);
+        const secretName = ref.match(/\$\(\S*\/secrets\/(\S*)\/versions\/latest\)/)[1];
+        const projectId = process.env.PROJECT_ID;  // Get the project ID from the environment
+
+        // Ensure projectId is not empty before proceeding
+        if (!projectId) {
+            throw new Error('PROJECT_ID environment variable is not set');
+        }
+
+        return await this.getSecretValue(`projects/${projectId}/secrets/${secretName}/versions/latest`);
     } else {
-      return ref;
+        return ref;
     }
-  }
+}
+
 
   public async getTypeOrmConfig(): Promise<TypeOrmModuleOptions> {
     const postgresHost = await this.resolveSecretReference('$(ref:projects/${PROJECT_ID}/secrets/postgres-host/versions/latest)');
