@@ -19,11 +19,8 @@ import { FileUploadModule } from './app/FileUpload/file-upload-module';
 
 @Module({
   imports: [
-   TypeOrmModule.forRootAsync({
-      inject: [databaseConfigService],
-      useFactory: async (databaseConfigService: any) => {
-        return await databaseConfigService.getTypeOrmConfig();
-      },
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => await databaseConfigService.getTypeOrmConfig(),
     }),
     AuthModule,
     UserModule,
