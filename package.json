@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "main": "dist/main.js",
   "scripts": {
-    "build": "yarn build",
+     "build": "tsc -p tsconfig.build.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "node ./dist/main.js",
     "start:dev": "nest start --watch",
@@ -26,7 +26,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-     "deploy": "gcloud app deploy"
+     "deploy": "gcloud app deploy",
+     "gcp-build": "yarn run build"
   },
   "dependencies": {
     "@google-cloud/secret-manager": "^5.1.0",
