@@ -1,5 +1,6 @@
-runtime: nodejs20
+runtime: nodejs18
 service: server
+entrypoint: node main.js
 
 env_variables:
   GAE_DB_ADDRESS: '/cloudsql/calm-edge-415106:us-central1:education-site'
