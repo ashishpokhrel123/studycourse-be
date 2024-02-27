@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Destination } from 'src/common/entities/destination';
+import { Destination } from 'src/common/entities/destination.entity';
 import { CreateDestinationDto } from '../dto/create-destination.dto';
 import { University } from 'src/common/entities/university.entity';
 

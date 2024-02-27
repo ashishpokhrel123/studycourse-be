@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { University } from 'src/common/entities/university.entity';
 import { UniversityRepository } from '../respository/universityRespository';
 import { FinanceDetails } from 'src/common/entities/financeDetails-university.entity';
-import { Destination } from 'src/common/entities/destination';
+import { Destination } from 'src/common/entities/destination.entity';
 import { Course } from 'src/common/entities/course.entity';
 import { Subject } from 'src/common/entities/subject.entity';
 

@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Blog } from './blog.entity';
 import { StudyLevel } from './studyLevel.entity';
-import { Destination } from './destination';
+import { Destination } from './destination.entity';
 
 export enum UserGender {
   MALE = 'male',

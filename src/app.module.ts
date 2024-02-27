@@ -16,20 +16,16 @@ import { DestinationModule } from './app/destination/module/destination.module';
 import { BlogModule } from './app/blog/module/blog.module';
 import { FileUploadModule } from './app/FileUpload/file-upload-module';
 import { join } from 'path';
+import { dataSourceOptions } from './database/data.source';
+import { Destination } from './common/entities/destination.entity';
+import { StudyLevel } from './common/entities/studyLevel.entity';
+import { Subject } from './common/entities/subject.entity';
+import { Blog } from './common/entities/blog.entity';
 
 
 @Module({
   imports: [
-   TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: '/cloudsql/calm-edge-415106:us-central1:education-site',
-      port: 5432,
-      username: "postgres",
-      password: ">yL2*Ppxak_/QHD#",
-      database: "study-courses",
-      entities: [join(__dirname, '**/**.entity{.ts,.js}')],
-      synchronize: true,
-    }),
+   TypeOrmModule.forRoot(dataSourceOptions),
     AuthModule,
     UserModule,
     CourseModule,
@@ -37,7 +33,11 @@ import { join } from 'path';
     TypeOrmModule.forFeature([
     ScUser,
     Course,
-    University
+    University,
+    Destination,
+    StudyLevel,
+    Subject,
+    Blog
     ]),
     SubjectModule,
     StudyLevelModule,

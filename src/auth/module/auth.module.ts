@@ -8,18 +8,25 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ScUser } from 'src/common/entities/user.entity';
 import { JwtStrategy } from '../strategies/jwt.strategy';
 import { RefreshJwtStrategy } from '../strategies/refresh-jwt.strategy';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      ScUser
-     
-    ]),
-    JwtModule.register({}),
+    TypeOrmModule.forFeature([ScUser]),
+    PassportModule,
+    JwtModule.register({
+      
+    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, UserRepository, JwtService,  JwtStrategy,
-    RefreshJwtStrategy],
+  providers: [
+    AuthService,
+    UserService,
+    UserRepository,
+    JwtService,
+    JwtStrategy,
+    RefreshJwtStrategy,
+  ],
   exports: [],
 })
 export class AuthModule {}

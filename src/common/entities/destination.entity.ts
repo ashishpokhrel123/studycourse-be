@@ -22,7 +22,8 @@ export class Destination {
   slug: string;
 
   @OneToMany(() => University, (university) => university.destination)
-  universities: University[];
+  universities: University[]; // Update the type to an array of University entities
+
 
   @OneToMany(() => ScUser, (user) => user.destination, { nullable: true })
   user: ScUser;

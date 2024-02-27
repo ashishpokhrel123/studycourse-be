@@ -3,7 +3,7 @@ import { isEmpty } from 'class-validator';
 import slugify from 'slugify';
 import { DestinationRepository } from '../respository/destinationRespository';
 import { CreateDestinationDto } from '../dto/create-destination.dto';
-import { Destination } from 'src/common/entities/destination';
+import { Destination } from 'src/common/entities/destination.entity';
 
 @Injectable()
 export class DestinationService {

@@ -10,7 +10,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { FinanceDetails } from './financeDetails-university.entity';
-import { Destination } from './destination';
+import { Destination } from './destination.entity';
+
 import { Course } from './course.entity';
 
 @Entity()

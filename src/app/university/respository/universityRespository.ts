@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { University } from 'src/common/entities/university.entity';
 import { UpdateUniversityDto } from '../dto/update-university.dto';
 import { CreateUniversityDto } from '../dto/create-university.dto';
-import { Destination } from 'src/common/entities/destination';
+import { Destination } from 'src/common/entities/destination.entity';
 import { FinanceDetails } from 'src/common/entities/financeDetails-university.entity';
 import { Course } from 'src/common/entities/course.entity';
 import { Subject } from 'src/common/entities/subject.entity';
