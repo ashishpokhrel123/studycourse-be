@@ -9,11 +9,14 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+
+  const port = process.env.PORT || 3001;
+
   const config = new DocumentBuilder()
     .setTitle('StudyCourse Api')
     .setDescription('The study course API description')
     .setVersion('1.0')
-    .addServer('http://localhost:3001/api', 'Local environment')
+    .addServer(`http://localhost:${port}/api`, 'Local environment')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',
@@ -35,7 +38,6 @@ async function bootstrap() {
   });
   app.use(cookieParser());
 
-  const port = 3001; // Choose your desired port
   await app.listen(port);
 
   Logger.log(
