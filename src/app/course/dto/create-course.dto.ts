@@ -1,57 +1,48 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsArray, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class StudyLevel {
-  @ApiProperty({ description: 'The course name of the course' })
+  @ApiProperty({ description: 'The name of the study level' })
   @IsNotEmpty()
   name: string;
-  @ApiProperty({ description: 'The course name of the course' })
+
+  @ApiProperty({ description: 'The slug of the study level' })
   @IsOptional()
   slug: string;
-  @ApiProperty({ description: 'The course name of the course' })
+
+  @ApiProperty({ description: 'The description of the study level' })
   @IsOptional()
   description: string;
-  @ApiProperty({ description: 'The course name of the course' })
+
+  @ApiProperty({ description: 'The other description of the study level' })
   @IsOptional()
   otherDescription: string;
 }
 
 export class Subject {
-  @ApiProperty({ description: 'The subject name of the course' })
+  @ApiProperty({ description: 'The name of the subject' })
   @IsNotEmpty()
   subjectName: string;
 
-  @ApiProperty({ description: 'The subject description of the course' })
+  @ApiProperty({ description: 'The description of the subject' })
   @IsNotEmpty()
   description: string;
 }
 
 export class CreateCourseDto {
-  @ApiProperty({ description: 'The course name of the course' })
+  @ApiProperty({ description: 'The name of the course' })
   @IsNotEmpty()
   courseName: string;
 
-  @ApiProperty({ description: 'The course description of the course' })
+  @ApiProperty({ description: 'The description of the course' })
   @IsNotEmpty()
   description: string;
 
-  @ApiProperty({ description: 'The study level  of the course' })
+  @ApiProperty({ description: 'The study level of the course' })
   @IsNotEmpty()
-  levelName: string;
+  level: StudyLevel;
 
-  @ApiProperty({ description: 'The study level  of the course' })
-  @IsOptional()
-  levelDescription: string;
-
-  @ApiProperty({ description: 'The study level  of the course' })
-  @IsOptional()
-  otherDescription: string;
-
-  @ApiProperty({ description: 'The study level  of the course' })
+  @ApiProperty({ description: 'The subjects of the course' })
   @IsNotEmpty()
-  subjectName: string;
-
-  @ApiProperty({ description: 'The study level  of the course' })
-  @IsOptional()
-  subjectDescription: string;
+  subjects: Subject[];
 }
