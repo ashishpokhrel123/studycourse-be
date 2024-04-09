@@ -3,10 +3,10 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateBlogDto {
   @ApiProperty({ description: 'The id of the post' })
-  @IsNotEmpty()
+ @IsOptional()
   id: string;
   @ApiProperty({ description: 'The title of the post' })
-  @IsNotEmpty()
+ @IsOptional()
   title: string;
 
   @ApiProperty({ description: 'The slug of the post', required: false })
@@ -25,7 +25,7 @@ export class UpdateBlogDto {
   metaDescription: string;
 
   @ApiProperty({ description: 'The contents of the post' })
-  @IsNotEmpty()
+ @IsOptional()
   contents: string;
 
   @ApiProperty({
@@ -33,7 +33,7 @@ export class UpdateBlogDto {
     type: [String],
     required: false,
   })
-  @IsNotEmpty()
+ @IsOptional()
   tags: string[];
 
   @ApiProperty({
@@ -62,6 +62,6 @@ export class UpdateBlogDto {
     description: 'The schema markup for SEO purposes',
     required: false,
   })
-  @IsNotEmpty()
+ @IsOptional()
   schemaMarkup: string;
 }

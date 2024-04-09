@@ -29,10 +29,6 @@ export class ScUser {
 
   @Column({
     unique: true,
-    transformer: {
-      to: (value) => value.toLowerCase(),
-      from: (value) => value,
-    },
   })
   email: string;
 

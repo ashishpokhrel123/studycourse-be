@@ -122,7 +122,8 @@ export class DestinationController {
   })
   async getDestinationBySlug(@Param('slug') slug: string): Promise<any> {
     const result = await this.destinationService.getDestinationBySlug(slug);
-    return CreateSuccessResponse(result.message, result.data);
+    console.log(result, "result")
+    return result
   }
 
   @Get('fetchUniversity/:slug')

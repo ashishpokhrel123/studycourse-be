@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional } from 'class-validator';
 
-export class StudyLevel {
+export class StudyLevelDTO {
   @ApiProperty({ description: 'The name of the study level' })
   @IsNotEmpty()
-  name: string;
+  levelName: string;
 
   @ApiProperty({ description: 'The slug of the study level' })
   @IsOptional()
@@ -12,14 +12,14 @@ export class StudyLevel {
 
   @ApiProperty({ description: 'The description of the study level' })
   @IsOptional()
-  description: string;
+  levelDescription: string;
 
   @ApiProperty({ description: 'The other description of the study level' })
   @IsOptional()
-  otherDescription: string;
+  levelOtherDescription: string;
 }
 
-export class Subject {
+export class SubjectDTO {
   @ApiProperty({ description: 'The name of the subject' })
   @IsNotEmpty()
   subjectName: string;
@@ -40,9 +40,9 @@ export class CreateCourseDto {
 
   @ApiProperty({ description: 'The study level of the course' })
   @IsNotEmpty()
-  level: StudyLevel;
+  levels: StudyLevelDTO;
 
   @ApiProperty({ description: 'The subjects of the course' })
   @IsNotEmpty()
-  subjects: Subject[];
+  subjects: SubjectDTO[];
 }

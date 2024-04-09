@@ -15,6 +15,9 @@ import { University } from './university.entity';
 
 @Entity()
 export class Course {
+  push(course: Course) {
+    throw new Error('Method not implemented.');
+  }
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

@@ -1,7 +1,7 @@
 
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { v4 as uuidv4 } from 'uuid';
 
 export class FinanceDetailsDto {
@@ -75,8 +75,9 @@ export class CreateUniversityDto {
 
 
   @ApiProperty({ description: 'The destination ID of the university' })
-  @IsNotEmpty()
-  course: string;
+  @IsArray()
+courses: string[];
+
 
   @ApiProperty({ description: 'FinanceDetails of the university' })
   @IsNotEmpty()

@@ -11,7 +11,8 @@ import {
   Request, // Import Request
   UseGuards,
   HttpException,
-  Query, // Import UseGuards
+  Query,
+  Put, // Import UseGuards
 } from '@nestjs/common';
 import { CourseService } from '../service/course.service';
 import {
@@ -57,8 +58,8 @@ export class CourseController {
       );
     }
   }
-  @UseGuards(JwtAuthGuard)
-  @Post('update')
+  // @UseGuards(JwtAuthGuard)
+  @Put('update')
   @ApiOperation({
     summary: 'Update a new course',
   })
@@ -68,6 +69,7 @@ export class CourseController {
     type: CreateSuccessResponse,
   })
   async updateCourse(@Body() updateCourseDto: UpdateCourseDto): Promise<any> {
+    console.log(updateCourseDto, "dto")
     try {
       const updatedCourse = await this.courseService.updateCourse(
         updateCourseDto,

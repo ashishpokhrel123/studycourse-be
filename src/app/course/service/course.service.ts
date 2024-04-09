@@ -10,42 +10,49 @@ import { Course } from 'src/common/entities/course.entity';
 export class CourseService {
   constructor(private readonly courseRepository: CourseRepository) {}
 
-  async createCourse(course: CreateCourseDto): Promise<any> {
-    try {
-      const { courseName, description, levelName, levelDescription, otherDescription, subjectName, subjectDescription } = course;
+ async createCourse(course: CreateCourseDto): Promise<any> {
+  try {
+    const { courseName, description, levels, subjects } = course;
 
-      if (isEmpty(courseName) || isEmpty(description) || isEmpty(levelName) || isEmpty(subjectName))
-        throw new HttpException(
-          'All fields  are required.',
-          HttpStatus.BAD_REQUEST,
-        );
-
-      const newCourse = await this.courseRepository.createCourse({
-        courseName,
-        slug : slugify(courseName.toLowerCase()),
-        description,
-        levelName,
-        levelDescription,
-        otherDescription,
-        subjectName,
-        subjectDescription
-      });
-      return newCourse;
-    } catch (error) {
-      console.log(error);
+    if (isEmpty(courseName) || isEmpty(description) || isEmpty(levels)  || !Array.isArray(subjects) || subjects.length === 0)
       throw new HttpException(
-        'Internal Server Error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'All fields are required.',
+        HttpStatus.BAD_REQUEST,
       );
-    }
+
+    const newCourse = await this.courseRepository.createCourse({
+      courseName,
+      description,
+      levels: {
+        levelName: levels.levelName,
+        slug: slugify(levels.levelName?.toLowerCase()),
+        levelDescription: levels.levelDescription ? levels.levelDescription : '',
+        levelOtherDescription: levels.levelOtherDescription ? levels.levelOtherDescription : ''
+      },
+      subjects: subjects.map(subject => ({
+        subjectName: subject.subjectName,
+        description: subject.description
+      }))
+    });
+    return newCourse;
+  } catch (error) {
+    console.error(error);
+    throw new HttpException(
+      'Internal Server Error',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
+}
+
   async updateCourse(course: UpdateCourseDto): Promise<any> {
     try {
-      const { id, courseName, description } = course;
+      const { id, courseName, description, levels, subjects } = course;
       const updatedCourse = await this.courseRepository.updateCourse({
         id,
         courseName,
         description,
+        levels,
+        subjects
       });
       return updatedCourse;
     } catch (error) {

@@ -58,4 +58,34 @@ export class UserService {
     
     
   }
+
+  async addUser(register: any): Promise<{
+    status: number;
+    message: string;
+  }> {
+  const newUser = await this.userRepository.addUser(register);
+    return newUser;
+    
+    
+  }
+
+   async addNewUser(register: any): Promise<{
+    status: number;
+    message: string;
+  }> {
+    console.log(register, "register")
+    const newUser = await this.userRepository.addNewUser(register.data);
+    return newUser;
+    
+    
+  }
+
+    async fetchAllUser(): Promise<any> {
+    const users = await this.userRepository.fetchAllUser();
+    console.log(users, "users")
+    return users;
+    
+    
+  }
+  
 }

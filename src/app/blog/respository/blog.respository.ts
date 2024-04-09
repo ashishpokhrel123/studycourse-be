@@ -82,105 +82,104 @@ export class BlogRepository {
       return new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async updatePost(
-    updateBlogDto,
-  ): Promise<{ status: number; message: string } | HttpException> {
-    try {
-      const {
-        id,
-        title,
-        metaTitle,
-        metaDescription,
-        contents,
-        author,
-        tags,
-        coverImage,
-        images,
-        slug,
-        schemaMarkup,
-      } = updateBlogDto;
-      //parsed User
-      const validUser = await this.getUser(author);
+async updatePost({
+  id,
+  title,
+  contents,
+  metaTitle,
+  metaDescription,
+  author,
+  tags,
+  coverImage,
+  images,
+  slug,
+  schemaMarkup,
+}): Promise<{ status: number; message: string } | HttpException> {
+  console.log(id, "in rpeo")
+  try {
+    // Validate user
+    const validUser = await this.getUser(author);
+    if (!validUser) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
 
-      // Find the blog to update
+    // Find the blog to update
+   const blog = await this.blogRepository.findOne({
+      where: { id },
+      relations: ['author'],
+    });
 
-      const blog = await this.blogRepository.findOne({
-        where: { id },
-        relations: ['categories', 'author'],
-      });
+    // Check if the authenticated user is the post author or an admin
+    // if (blog.author.id !== validUser.id) {
+    //   throw new HttpException(
+    //     'You are not authorized to update this blog',
+    //     HttpStatus.UNAUTHORIZED,
+    //   );
+    // }
 
-      if (!blog) {
-        throw new HttpException('Blog not found', HttpStatus.NOT_FOUND);
-      }
+    // Update blog data
+    // Update properties
+blog.title = title ?? blog.title;
+blog.slug = slug ?? slugify(title ?? blog.title); // Revise slug logic
+blog.metaTitle = metaTitle ?? blog.metaTitle;
+blog.metaDescription = metaDescription ?? blog.metaDescription;
+blog.contents = contents ?? blog.contents;
+blog.images = images ?? blog.images;
+blog.coverImage = coverImage ?? blog.coverImage;
+blog.schemaMarkup = schemaMarkup ??  blog.schemaMarkup;
+blog.updatedAt = new Date();
+blog.updatedBy = validUser.id;
 
-      // Check if the authenticated user is the post author or an admin
+// Update tags if provided
+if (tags && tags.length > 0) {
+  const inputTags = new Set(tags);
+  const filteredTags = [...inputTags];
 
-      if (!validUser || blog.author.id !== validUser.id) {
-        throw new HttpException(
-          'You are not authorized to update this blog',
-          HttpStatus.UNAUTHORIZED,
-        );
-      }
-
-      // Update blog data
-      blog.title = title ?? blog.title;
-      if (slug === '') {
-        blog.slug = slugify(title);
-      } else {
-        blog.slug = slugify(slug);
-      }
-      (blog.metaTitle = metaTitle), (blog.metaDescription = metaDescription);
-      blog.contents = contents ?? blog.contents;
-      blog.images = images ?? blog.images;
-      blog.coverImage = coverImage ?? blog.coverImage;
-      blog.schemaMarkup = schemaMarkup;
-      blog.updatedAt = new Date();
-      blog.updatedBy = validUser.id;
-
-      const updatedBlog = await this.blogRepository.save(blog);
-
-      //update tags
-
-      if (tags && tags != null && tags?.length < 0) {
-        const inputTags = new Set(tags);
-        const filteredTags = blog.tags.filter((tag) => inputTags.has(tag));
-
-        for (const tag of tags) {
-          if (!filteredTags.includes(tag)) {
-            filteredTags.push(tag);
-          }
-        }
-        updatedBlog.tags = filteredTags;
-      }
-
-      //update blog
-      await this.blogRepository.save(updatedBlog);
-
-      return {
-        status: HttpStatus.OK,
-        message: 'Blog updated successfully',
-      };
-    } catch (error) {
-      this.defaultLogger.log(error);
-      return new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+  // Add new tags if they don't exist
+  for (const tag of tags) {
+    if (!blog.tags.includes(tag)) {
+      blog.tags.push(tag);
     }
   }
+
+  // Remove tags that are not in the input set
+  blog.tags = blog.tags.filter(tag => inputTags.has(tag));
+}
+
+// Save updated blog
+await this.blogRepository.save(blog);
+
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Blog updated successfully',
+    };
+  } catch (error) {
+    this.defaultLogger.error(error);
+    if (error instanceof HttpException) {
+      return error;
+    }
+    return new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
+
 
   async fetchAllBlog() {
     return this.blogRepository.find({ relations: ['author'] });
   }
 
-  async fetchBlogBySlug({ slug }) {
-    const blog =  this.blogRepository.findOne({
+  async fetchBlogBySlug(slug) {
+    console.log(slug, 'comming');
+    const blog = this.blogRepository.findOne({
       where: { slug },
       relations: ['author'],
     });
-
-    console.log(blog)
+    return blog;
   }
 
-  async fetchBlogById({ id }):Promise<Blog | undefined> {
-    const blogs =  this.blogRepository.findOne({
+  async fetchBlogById({ id }): Promise<Blog | undefined> {
+    const blogs = this.blogRepository.findOne({
       where: { id },
       relations: ['author'],
     });

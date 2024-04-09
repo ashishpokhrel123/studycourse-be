@@ -61,7 +61,7 @@ export class UserRepository {
     studyLevel,
     destination,
     counselingOption,
-    termsAndConditionsAccepted
+    termsAndConditionsAccepted,
   }): Promise<any> {
     const createdUser = this.userRepository.create({
       firstName,
@@ -74,22 +74,76 @@ export class UserRepository {
       studyLevel,
       destination,
       counselingOption,
-      termsAndConditionsAccepted
+      termsAndConditionsAccepted,
     });
     const addUser = await this.userRepository.save(createdUser);
     return {
       status: HttpStatus.CREATED,
-      message:"User registred successfully"
-    }
+      message: 'User registred successfully',
+    };
   }
 
   //fetch user
   async fetchUser(): Promise<any> {
-    const users = await this.userRepository.find();
+    try {
+      const users = await this.userRepository.find({
+        where: { role: UserRole.STUDENT },
+      });
+      return {
+        status: HttpStatus.OK,
+        message: 'Users fetched successfully',
+        data: users,
+      };
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to fetch users',
+        data: null,
+      };
+    }
+  }
+
+  async fetchAllUser(): Promise<{ status: number, message: string, data: ScUser[] | null } > {
+    try {
+      const users = await this.userRepository.find({
+        where: { role: UserRole.ADMIN },
+      });
+      return {
+        status: HttpStatus.OK,
+        message: 'Users fetched successfully',
+        data: users,
+      };
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to fetch users',
+        data: null,
+      };
+    }
+  }
+
+  async addNewUser({
+    firstName,
+    lastName,
+    email,
+    phone,
+    dateOfBirth,
+    gender
+  }): Promise<any> {
+    const createdUser = this.userRepository.create({
+      firstName,
+      lastName,
+      email,
+      phone,
+      dateOfBirth,
+      gender
+    });
+    const addUser = await this.userRepository.save(createdUser);
     return {
       status: HttpStatus.CREATED,
-      message:"User fetch successfully",
-      data:users
-    }
+      message: 'User registred successfully',
+    };
   }
 }

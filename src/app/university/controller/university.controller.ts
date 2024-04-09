@@ -8,6 +8,7 @@ import {
   HttpException,
   UseGuards,
   Query,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -22,6 +23,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { University } from 'src/common/entities/university.entity';
 import { CreateSuccessResponse } from 'src/common/response/response';
 import { SearchCriteriaDTO } from '../dto/search-university.dto';
+import { UpdateUniversityDto } from '../dto/update-university.dto';
 
 @ApiTags('University')
 @Controller('university')
@@ -56,7 +58,7 @@ export class UniversityController {
       const newUniversity = await this.universityService.createUniversity(
         createUniversityDto,
       );
-      return CreateSuccessResponse("University added succesfully")
+      return CreateSuccessResponse('University added succesfully');
     } catch (error) {
       throw new HttpException(
         'Internal Server Error',
@@ -64,6 +66,41 @@ export class UniversityController {
       );
     }
   }
+
+  @Put('update')
+  @ApiOperation({
+    summary: 'Update a new University',
+    description: 'Create a new university with the provided data',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'University updated successfully',
+    type: University,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request: Invalid input data',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error',
+  })
+  async updateUniversity(
+  @Body() updateUniversityDto: UpdateUniversityDto,
+): Promise<any> {
+  try {
+    console.log(updateUniversityDto, "controller")
+    const updatedUniversity = await this.universityService.updateUniversity(updateUniversityDto);
+    return CreateSuccessResponse('University updated successfully');
+  } catch (error) {
+    console.error(error);
+    throw new HttpException(
+      'Internal Server Error',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+}
+
 
   @Get('all')
   @ApiOperation({
@@ -105,7 +142,7 @@ export class UniversityController {
     return result;
   }
 
-  @Get('/:slug')
+  @Get('slug/:slug')
   @ApiOperation({
     summary: 'Fetch a university by slug',
     description: 'Retrieve a university using its slug',
@@ -123,9 +160,10 @@ export class UniversityController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Internal server error',
   })
-  async getUniversityBySlug(@Param('slug') slug: string): Promise<University> {
+  async getUniversityBySlug(@Param('slug') slug: string): Promise<any> {
+    console.log(slug, 'slug from controller');
     try {
-      const university = await this.universityService.getUniversityBySlug(slug);
+      const university = await this.universityService.getUniversityBySlug({slug});
       if (!university) {
         throw new NotFoundException('University not found');
       }
@@ -137,6 +175,7 @@ export class UniversityController {
       );
     }
   }
+
   // this api is sued to serach university by course and level
   @Post('search')
   @ApiOperation({
@@ -156,35 +195,41 @@ export class UniversityController {
     return result;
   }
 
-@Get('/course/:course')
-@ApiOperation({
-  summary: 'Fetch a university by course',
-  description: 'Retrieve a university using its course',
-})
-@ApiResponse({
-  status: HttpStatus.OK,
-  description: 'University fetched successfully',
-  type: University,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'University not found',
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Internal server error',
-})
-async getUniversityByCourses(@Param('course') course: string,  @Query('destination') destination?: string ): Promise<University> {
-  const university = await this.universityService.getUniversityByCourse({course, destination});
+  @Get('/course/:course')
+  @ApiOperation({
+    summary: 'Fetch a university by course',
+    description: 'Retrieve a university using its course',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'University fetched successfully',
+    type: University,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'University not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error',
+  })
+  async getUniversityByCourses(
+    @Param('course') course: string,
+    @Query('destination') destination?: string,
+  ): Promise<University> {
+    const university = await this.universityService.getUniversityByCourse({
+      course,
+      destination,
+    });
 
-  if (!university) {
-    throw new NotFoundException('University not found');
+    if (!university) {
+      throw new NotFoundException('University not found');
+    }
+
+    return university;
   }
 
-  return university;
-}
-
-@Get('multiple/:ids')
+  @Get('multiple/:ids')
   @ApiOperation({
     summary: 'Fetch universities by IDs',
   })
@@ -193,7 +238,7 @@ async getUniversityByCourses(@Param('course') course: string,  @Query('destinati
     description: 'Universities fetched successfully',
   })
   async getUniversitiesByIds(@Param('ids') ids: string): Promise<any[]> {
-    console.log(ids, "ids");
+    console.log(ids, 'ids');
     try {
       if (!ids)
         throw new HttpException(
@@ -203,14 +248,11 @@ async getUniversityByCourses(@Param('course') course: string,  @Query('destinati
 
       // Split the path parameter string of IDs into an array
       const idArray = ids.split(',');
-      console.log(idArray, "array")
+      console.log(idArray, 'array');
 
       return this.universityService.getUniversityByIds(idArray);
     } catch (error) {
       // Handle error here
     }
   }
-
-
-   
 }

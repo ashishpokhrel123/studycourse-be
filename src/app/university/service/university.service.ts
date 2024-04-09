@@ -26,7 +26,7 @@ export class UniversityService {
         universityImage,
         financeDetails,
         destination,
-        course
+        courses,
       } = university;
 
       if (isEmpty(universityName) || isEmpty(description))
@@ -49,7 +49,7 @@ export class UniversityService {
         universityImage,
         financeDetails,
         destination,
-        course
+        courses,
       });
       return newUniversity;
     } catch (error) {
@@ -60,6 +60,48 @@ export class UniversityService {
       );
     }
   }
+async updateUniversity(university: UpdateUniversityDto): Promise<any> {
+  console.log(university, 'in service');
+  try {
+    const {
+      id,
+      universityName,
+      universityAddress,
+      universityContactNumber,
+      description,
+      universityEmail,
+      universityImage,
+      worldRanking,
+      countryRanking,
+      financeDetails,
+      destination,
+      courses
+    } = university;
+
+    const updatedUniversity = await this.universityRepository.updateUniversity({
+      id,
+      universityName,
+      universityAddress,
+      universityContactNumber,
+      description,
+      universityEmail,
+      universityImage,
+      worldRanking,
+      countryRanking,
+      financeDetails,
+      destination,
+      courses
+    });
+
+    return updatedUniversity;
+  } catch (error) {
+    console.log(error);
+    throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
+
+
   // async updateCourse(course: UpdateUniversityDto): Promise<any> {
   //   try {
   //     const { id, courseName, description } = course;
@@ -87,14 +129,15 @@ export class UniversityService {
       );
     }
   }
-  async getUniversityBySlug(slug: string): Promise<any> {
+  async getUniversityBySlug({ slug }: any): Promise<any> {
+    console.log(slug, 'in services');
     try {
       if (isEmpty(slug))
         throw new HttpException(
           'Slug parameter is required.',
           HttpStatus.BAD_REQUEST,
         );
-      return this.universityRepository.fetchUniversityBySlug(slug);
+      return this.universityRepository.fetchUniversityBySlug({ slug });
     } catch (error) {}
   }
 
@@ -127,27 +170,29 @@ export class UniversityService {
     } catch (error) {}
   }
 
-   async getUniversityByCourse({course, destination}): Promise<any> {
+  async getUniversityByCourse({ course, destination }): Promise<any> {
     try {
       if (isEmpty(course))
         throw new HttpException(
           'Course parameter is required.',
           HttpStatus.BAD_REQUEST,
         );
-      return this.universityRepository.fetchUniversityByCourse({course, destination});
+      return this.universityRepository.fetchUniversityByCourse({
+        course,
+        destination,
+      });
     } catch (error) {}
   }
-async getUniversityByIds(ids: string[]): Promise<any[]> {
-  try {
-    if (isEmpty(ids))
-      throw new HttpException(
-        'Ids parameter is required.',
-        HttpStatus.BAD_REQUEST,
-      );
-    return this.universityRepository.fetchUniversitiesByIds(ids);
-  } catch (error) {
-    // Handle error here
+  async getUniversityByIds(ids: string[]): Promise<any[]> {
+    try {
+      if (isEmpty(ids))
+        throw new HttpException(
+          'Ids parameter is required.',
+          HttpStatus.BAD_REQUEST,
+        );
+      return this.universityRepository.fetchUniversitiesByIds(ids);
+    } catch (error) {
+      // Handle error here
+    }
   }
-}
-
 }

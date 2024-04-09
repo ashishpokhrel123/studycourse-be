@@ -12,13 +12,16 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { FileUploadService } from './file-upload-service';
+
 import { Response } from 'express';
 import * as path from 'path';
+import { Observable, of } from 'rxjs';
+
+
 
 @Controller('uploads')
 export class StorageController {
-  constructor(private readonly fileService: FileUploadService) {}
+ 
 
   @Post()
   @UseInterceptors(
@@ -54,25 +57,20 @@ export class StorageController {
     }
   }
 
-  @Get('/:fileName')
-  async getFile(@Param('fileName') fileName: string, @Res() res: Response) {
-    try {
-      const filePath = path.join('./uploads', fileName);
-      console.log(filePath);
-      const fileContent = await this.fileService.getFile(filePath);
-      res.setHeader('Content-Type', 'image/jpeg');
-      res.send(fileContent);
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        res.status(HttpStatus.NOT_FOUND).send('File not found');
-      } else {
-        res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .send('Error fetching file');
-      }
+  @Get('image/:imagename')
+    findImage(@Param('imagename') imagename, @Res() res): Observable<Object> {
+        return of(res.sendFile(path.join(process.cwd(), './uploads/' + imagename)));
+    }
+
+  private handleFileError(error: any, res: Response): void {
+    if (error instanceof NotFoundException) {
+      res.status(HttpStatus.NOT_FOUND).send('File not found');
+    } else {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error fetching file');
     }
   }
 }
+
 
 // Function for file type validation
 function imageFileFilter(req, file, cb) {

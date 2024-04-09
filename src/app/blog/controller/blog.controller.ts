@@ -8,9 +8,10 @@ import {
   Delete,
   UseFilters,
   HttpStatus,
-  Request, // Import Request
+  Request,
   UseGuards,
-  HttpException, // Import UseGuards
+  HttpException,
+  Put,
 } from '@nestjs/common';
 
 import {
@@ -34,6 +35,7 @@ import { UpdateBlogDto } from '../dto/update-blog.dto';
 @ApiSecurity('bearerAuth')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
+
   @UseGuards(JwtAuthGuard)
   @Post('create')
   @ApiOperation({
@@ -59,8 +61,9 @@ export class BlogController {
       );
     }
   }
+
   @UseGuards(JwtAuthGuard)
-  @Post('update')
+  @Put('update')
   @ApiOperation({
     summary: 'Update a new blog',
   })
@@ -69,8 +72,11 @@ export class BlogController {
     description: 'Blog updated successfully',
     type: CreateSuccessResponse,
   })
+
   async updateCourse(@Body() updateBlogDto: UpdateBlogDto): Promise<any> {
+    
     try {
+      console.log(updateBlogDto, "dtooo")
       const updatedCourse = await this.blogService.updateBlog(updateBlogDto);
       return updatedCourse;
     } catch (error) {
@@ -102,50 +108,43 @@ export class BlogController {
     }
   }
 
-  // @Get('/:id')
-  // @ApiOperation({
-  //   summary: 'Course fetch succesfully',
-  // })
-  // @ApiResponse({
-  //   status: HttpStatus.OK,
-  //   description: 'Course fetch succesfully',
-  //   type: CreateSuccessResponse,
-  // })
-  // async getCourseByIds(@Param('id') id: string): Promise<any> {
-  //   const result = await this.courseService.getCourseById({id});
-  //   return {
-  //     status: HttpStatus.OK,
-  //     message:"Cousre fetch succesfully",
-  //     data: result
-  //   }
-  // }
+  @Get('slug/:slug') // Updated route
+  @ApiOperation({ summary: 'Fetch a blog by slug' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Blog fetched successfully',
+    type: CreateSuccessResponse,
+  })
+  async getBlogBySlug(@Param('slug') slug: any): Promise<any> {
+    try {
+      const result = await this.blogService.getBlogBySlug({ slug });
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
-  @Get('/:id')
+  @Get('id/:id') // Updated route
   @ApiOperation({
-    summary: 'Blog fetch succesfully',
+    summary: 'Blog fetch successfully',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Blog fetch succesfully',
+    description: 'Blog fetch successfully',
     type: CreateSuccessResponse,
   })
   async getBlogById(@Param('id') id: string): Promise<any> {
-    const result = await this.blogService.getBlogById(id);
-    return result;
-  }
-
-  @Get('/:slug')
-  @ApiOperation({
-    summary: 'Blog fetch succesfully',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Blog fetch succesfully',
-    type: CreateSuccessResponse,
-  })
-  async getBlogBySlug(@Param('slug') slug: string): Promise<any> {
-    console.log(slug)
-    const result = await this.blogService.getBlogBySlug(slug);
-    return CreateSuccessResponse(result.message, result.data);
+    try {
+      const result = await this.blogService.getBlogById(id);
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

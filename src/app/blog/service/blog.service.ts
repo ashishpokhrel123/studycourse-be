@@ -58,6 +58,8 @@ export class BlogService {
         slug,
         schemaMarkup,
       } = blog;
+
+      console.log(blog, "in services too")
       const updatedBlog = await this.blogRepository.updatePost({
         id,
         title,
@@ -90,14 +92,15 @@ export class BlogService {
       );
     }
   }
-  async getBlogBySlug(slug: string): Promise<any> {
+  async getBlogBySlug({slug}): Promise<any> {
+    console.log(slug)
     try {
       if (isEmpty(slug))
         throw new HttpException(
           'Slug parameter is required.',
           HttpStatus.BAD_REQUEST,
         );
-      return this.blogRepository.fetchBlogBySlug({ slug });
+      return this.blogRepository.fetchBlogBySlug( slug);
     } catch (error) {}
   }
 
