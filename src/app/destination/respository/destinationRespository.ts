@@ -46,7 +46,7 @@ export class DestinationRepository {
     return this.destinationRepository.findOne({ where: { slug } });
   }
 
-   async fetchUniversityByDestination({ slug }: any): Promise<any> {
+   async fetchUniversityByDestination( slug : any): Promise<any> {
     const destination = await this.destinationRepository.findOne({ where: { slug }, relations: ["universities"] });
     if (!destination) {
       throw new Error('Destination not found');
