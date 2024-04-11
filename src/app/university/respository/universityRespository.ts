@@ -403,10 +403,10 @@ export class UniversityRepository {
       }
 
       if (scholarship) {
-        if (scholarship === 'true') {
-          query.andWhere('financeDetails.scholarshipDetails = true');
-        } else if (scholarship === 'false') {
-          query.andWhere('financeDetails.scholarshipDetails = false');
+        if (scholarship === 'yes') {
+          query.andWhere('financeDetails.scholarshipDetails = yes');
+        } else if (scholarship === 'no') {
+          query.andWhere('financeDetails.scholarshipDetails = no');
         }
       }
 
