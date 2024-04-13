@@ -66,7 +66,7 @@ export class BlogRepository {
       blog.author = validUser;
       blog.tags = tags;
       blog.coverImage = coverImage;
-      blog.images = images;
+      blog.images = [images];
       blog.schemaMarkup = schemaMarkup;
       blog.createdAt = new Date();
       blog.createdBy = validUser.id;
@@ -124,7 +124,7 @@ blog.slug = slug ?? slugify(title ?? blog.title); // Revise slug logic
 blog.metaTitle = metaTitle ?? blog.metaTitle;
 blog.metaDescription = metaDescription ?? blog.metaDescription;
 blog.contents = contents ?? blog.contents;
-blog.images = images ?? blog.images;
+blog.images = [images ?? blog.images];
 blog.coverImage = coverImage ?? blog.coverImage;
 blog.schemaMarkup = schemaMarkup ??  blog.schemaMarkup;
 blog.updatedAt = new Date();
