@@ -439,6 +439,7 @@ export class UniversityRepository {
         .createQueryBuilder('university')
         .leftJoinAndSelect('university.destination', 'destination')
         .innerJoinAndSelect('university.courses', 'course')
+        .innerJoinAndSelect('course.subjects', 'subject')
         .where('course.id = :courseId', { courseId: courseRecord.id });
 
       if (destination) {
