@@ -433,13 +433,15 @@ export class UniversityRepository {
         where: { slug: course },
       });
 
+      
+
       if (!courseRecord) return null;
 
       let query = this.universityRepository
         .createQueryBuilder('university')
         .leftJoinAndSelect('university.destination', 'destination')
         .innerJoinAndSelect('university.courses', 'course')
-        .innerJoinAndSelect('course.subjects', 'subject')
+        .innerJoinAndSelect('course.subject', 'subject')
         .where('course.id = :courseId', { courseId: courseRecord.id });
 
       if (destination) {
