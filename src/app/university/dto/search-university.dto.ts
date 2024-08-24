@@ -26,4 +26,8 @@ export class SearchCriteriaDTO {
   @IsString()
   @IsIn(['yes', 'no']) 
   scholarship?: 'yes' | 'no'; 
+
+  @IsOptional()
+  @IsString()
+  courseCategory?: string; 
 }

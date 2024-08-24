@@ -15,18 +15,19 @@ export class UniversityService {
     try {
       const {
         universityName,
-        universityAddress,
-        universityContactNumber,
-        universityEmail,
+        // universityAddress,
+        // universityContactNumber,
+        // universityEmail,
         slug,
         description,
         otherDescription,
         worldRanking,
         countryRanking,
         universityImage,
-        financeDetails,
+        // financeDetails,
         destination,
         courses,
+        campuses,
       } = university;
 
       if (isEmpty(universityName) || isEmpty(description))
@@ -37,19 +38,15 @@ export class UniversityService {
 
       const newUniversity = await this.universityRepository.createUniversity({
         universityName,
-        universityAddress,
-        universityContactNumber,
-        universityEmail,
-
         slug: slugify(universityName.toLowerCase()),
         description,
         otherDescription,
         worldRanking,
         countryRanking,
         universityImage,
-        financeDetails,
         destination,
         courses,
+        campuses,
       });
       return newUniversity;
     } catch (error) {
@@ -60,47 +57,43 @@ export class UniversityService {
       );
     }
   }
-async updateUniversity(university: UpdateUniversityDto): Promise<any> {
-  console.log(university, 'in service');
-  try {
-    const {
-      id,
-      universityName,
-      universityAddress,
-      universityContactNumber,
-      description,
-      universityEmail,
-      universityImage,
-      worldRanking,
-      countryRanking,
-      financeDetails,
-      destination,
-      courses
-    } = university;
+  async updateUniversity(university: UpdateUniversityDto): Promise<any> {
+    console.log(university, 'in service');
+    try {
+      const {
+        id,
+        universityName,
+        description,
+        universityImage,
+        worldRanking,
+        // countryRanking,
+        destination,
+        courses,
+        campuses,
+      } = university;
 
-    const updatedUniversity = await this.universityRepository.updateUniversity({
-      id,
-      universityName,
-      universityAddress,
-      universityContactNumber,
-      description,
-      universityEmail,
-      universityImage,
-      worldRanking,
-      countryRanking,
-      financeDetails,
-      destination,
-      courses
-    });
+      const updatedUniversity =
+        await this.universityRepository.updateUniversity({
+          id,
+          universityName,
+          description,
+          universityImage,
+          worldRanking,
+          // countryRanking,
+          destination,
+          courses,
+          campuses,
+        });
 
-    return updatedUniversity;
-  } catch (error) {
-    console.log(error);
-    throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+      return updatedUniversity;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
-}
-
-
 
   // async updateCourse(course: UpdateUniversityDto): Promise<any> {
   //   try {
@@ -129,6 +122,18 @@ async updateUniversity(university: UpdateUniversityDto): Promise<any> {
       );
     }
   }
+
+   async getUniversityPublic(): Promise<University[]> {
+    try {
+      const course = await this.universityRepository.fetchUniversityPublic();
+      return course;
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
   async getUniversityBySlug({ slug }: any): Promise<any> {
     console.log(slug, 'in services');
     try {
@@ -143,7 +148,7 @@ async updateUniversity(university: UpdateUniversityDto): Promise<any> {
 
   async searchUniversity(searchCriteria: SearchCriteriaDTO): Promise<any> {
     try {
-      const { course, level, location, rankingOrder, feesOrder, scholarship } =
+      const { course, level, location, rankingOrder, feesOrder, scholarship, courseCategory  } =
         searchCriteria;
       return await this.universityRepository.searchUniversity({
         course,
@@ -152,6 +157,7 @@ async updateUniversity(university: UpdateUniversityDto): Promise<any> {
         rankingOrder,
         feesOrder,
         scholarship,
+        courseCategory
       });
     } catch (error) {
       console.error('Error searching universities:', error);
@@ -193,6 +199,39 @@ async updateUniversity(university: UpdateUniversityDto): Promise<any> {
       return this.universityRepository.fetchUniversitiesByIds(ids);
     } catch (error) {
       // Handle error here
+    }
+  }
+
+  async updateStatusUniversity(id: string): Promise<void> {
+    try {
+      if (isEmpty(id))
+        throw new HttpException(
+          'Id parameter is required.',
+          HttpStatus.BAD_REQUEST,
+        );
+      await this.universityRepository.updateStatusUniversity(id);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+   async fetchSubjectsByUniversity(id: string): Promise<any> {
+    console.log(id, "iddd")
+    try {
+      if (isEmpty(id))
+        throw new HttpException(
+          'Id parameter is required.',
+          HttpStatus.BAD_REQUEST,
+        );
+      return await this.universityRepository.fetchSubjectsByUniversity(id);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

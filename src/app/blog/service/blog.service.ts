@@ -114,4 +114,21 @@ export class BlogService {
       return this.blogRepository.fetchBlogById({ id });
     } catch (error) {}
   }
+
+   async deleteBlogById(id: string): Promise<void> {
+    try {
+      if (isEmpty(id))
+        throw new HttpException(
+          'Id parameter is required.',
+          HttpStatus.BAD_REQUEST,
+        );
+      await this.blogRepository.deleteBlogById(id);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
+

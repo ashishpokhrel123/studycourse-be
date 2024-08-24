@@ -23,6 +23,23 @@ export class FinanceDetailsDto {
   scholarshipDetails?: string;
 }
 
+export class CampusesDto {
+  @ApiProperty({ description: 'The campus location of the university' })
+  @IsNotEmpty()
+  @IsString()
+  location: string;
+
+  @ApiProperty({ description: 'The campus email of the university' })
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+
+  @ApiProperty({ description: 'The campus contact of the university' })
+  @IsNotEmpty()
+  @IsString()
+  contact: string;
+}
+
 export class UpdateUniversityDto {
 
 
@@ -35,29 +52,29 @@ export class UpdateUniversityDto {
 
   universityName: string;
 
-  @ApiProperty({ description: 'The address of the university' })
+  // @ApiProperty({ description: 'The address of the university' })
 
-  universityAddress: string;
+  // universityAddress: string;
 
-  @ApiProperty({ description: 'The contact number of the university' })
+  // @ApiProperty({ description: 'The contact number of the university' })
 
-  universityContactNumber: string;
+  // universityContactNumber: string;
 
    @ApiProperty({ description: 'The description of the university' })
 
   description: string;
 
-  @ApiProperty({ description: 'The email of the university' })
+  // @ApiProperty({ description: 'The email of the university' })
 
-  universityEmail: string;
+  // universityEmail: string;
 
   @ApiProperty({ description: 'The world ranking of the university' })
 
   worldRanking: number;
 
-  @ApiProperty({ description: 'The country ranking of the university' })
+  // @ApiProperty({ description: 'The country ranking of the university' })
 
-  countryRanking: number;
+  // countryRanking: number;
 
   @ApiProperty({ description: 'The image URL of the university (optional)' })
   @IsOptional()
@@ -74,4 +91,8 @@ export class UpdateUniversityDto {
   @ApiProperty({ description: 'FinanceDetails of the university' })
 
   financeDetails: FinanceDetailsDto;
+
+  @ApiProperty({ description: 'Campuses of the university' })
+  @IsOptional()
+  campuses: CampusesDto[];
 }

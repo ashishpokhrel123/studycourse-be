@@ -82,4 +82,19 @@ export class DestinationService {
       return this.destinationRepository.fetchUniversityByDestination(slug);
     } catch (error) {}
   }
+
+  // async deleteDestinationById(id: string): Promise<void> {
+  //   try {
+  //     const result = await this.destinationRepository.de(id);
+  //     if (result.affected === 0) {
+  //       throw new HttpException('Destination not found', HttpStatus.NOT_FOUND);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     throw new HttpException(
+  //       'Internal Server Error',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 }

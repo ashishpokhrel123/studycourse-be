@@ -147,4 +147,27 @@ export class BlogController {
       );
     }
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete a blog by ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Blog deleted successfully',
+    type: CreateSuccessResponse,
+  })
+  async deleteBlogById(@Param('id') id: string): Promise<any> {
+    try {
+      await this.blogService.deleteBlogById(id);
+      return CreateSuccessResponse('Blog deleted successfully', null);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
+

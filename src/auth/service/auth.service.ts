@@ -50,6 +50,7 @@ export class AuthService {
         expiresIn: '7d',
       }),
     ]);
+    console.log(access_token, "accesstok")
     return { access_token, refresh_token };
   }
 
@@ -188,7 +189,9 @@ export class AuthService {
     access_token: string;
     refresh_token: string;
   }> {
+    console.log(email, pass, "in serve")
     const user = await this.validateUser(email, pass);
+    console.log(user, "serv2")
     if (user) {
       const payload = { email: user.email, id: user.id };
       return this.getToken(payload);

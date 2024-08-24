@@ -8,10 +8,11 @@ import { Course } from 'src/common/entities/course.entity';
 import { StudyLevel } from 'src/common/entities/studyLevel.entity';
 import { Subject } from 'src/common/entities/subject.entity';
 import { SubjectRepository } from 'src/app/subject/respository/subjectRepositiry';
+import { CourseCategory } from 'src/common/entities/course-category';
 
 @Module({
    imports: [
-    TypeOrmModule.forFeature([Course, StudyLevel, Subject]),
+    TypeOrmModule.forFeature([Course, StudyLevel, Subject, CourseCategory]),
   ],
   controllers: [CourseController],
   providers: [CourseService, CourseRepository, StudyLevelRepository, SubjectRepository]

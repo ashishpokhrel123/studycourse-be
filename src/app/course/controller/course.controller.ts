@@ -48,7 +48,6 @@ export class CourseController {
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto): Promise<any> {
     try {
-      
       const newCourse = await this.courseService.createCourse(createCourseDto);
       return CreateSuccessResponse('Course created successfully', newCourse);
     } catch (error) {
@@ -69,7 +68,7 @@ export class CourseController {
     type: CreateSuccessResponse,
   })
   async updateCourse(@Body() updateCourseDto: UpdateCourseDto): Promise<any> {
-    console.log(updateCourseDto, "dto")
+    console.log(updateCourseDto, 'dto');
     try {
       const updatedCourse = await this.courseService.updateCourse(
         updateCourseDto,
@@ -107,6 +106,27 @@ export class CourseController {
     }
   }
 
+  @Get('public/all')
+  @ApiOperation({
+    summary: 'Update a new course',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Course fetch successfully',
+    type: CreateSuccessResponse,
+  })
+  async getCoursesPublic(): Promise<any> {
+    try {
+      const fetchCourse = await this.courseService.getCoursesPublic();
+      return CreateSuccessResponse('Course fetch successfully', fetchCourse);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Get('/:id')
   @ApiOperation({
     summary: 'Course fetch succesfully',
@@ -117,14 +137,14 @@ export class CourseController {
     type: CreateSuccessResponse,
   })
   async getCourseByIds(@Param('id') id: string): Promise<any> {
-    const result = await this.courseService.getCourseById({id});
+    const result = await this.courseService.getCourseById({ id });
     return {
       status: HttpStatus.OK,
-      message:"Cousre fetch succesfully",
-      data: result
-    }
+      message: 'Cousre fetch succesfully',
+      data: result,
+    };
   }
-  
+
   @Get('/:slug')
   @ApiOperation({
     summary: 'Course fetch succesfully',
@@ -162,14 +182,102 @@ export class CourseController {
     description: 'Subject fetch succesfully',
     type: CreateSuccessResponse,
   })
-   async getCoursesByLevel(
+  async getCoursesByLevel(
     @Param('level') level: string,
     @Query('universityId') universityId?: string,
-    @Query('destination') destination?: string 
+    @Query('destination') destination?: string,
   ): Promise<any> {
-    const result = await this.courseService.getCourseByLevel({ level, universityId, destination });
+    const result = await this.courseService.getCourseByLevel({
+      level,
+      universityId,
+      destination,
+    });
     return result;
   }
 
- 
+  @Delete(':id') // Add Delete route
+  @ApiOperation({
+    summary: 'Delete a course by ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Course deleted successfully',
+    type: CreateSuccessResponse,
+  })
+  async deleteCourseById(@Param('id') id: string): Promise<any> {
+    try {
+      await this.courseService.deleteCourseById(id);
+      return CreateSuccessResponse('Course deleted successfully', null);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  @Put(':id')
+  @ApiOperation({
+    summary: 'Update a course  status by ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Course status updated successfully',
+    type: CreateSuccessResponse,
+  })
+  async updateStausCourse(@Param('id') id: string): Promise<any> {
+    try {
+      const course = await this.courseService.updateStatusCourse(id);
+      return CreateSuccessResponse('Course updated successfully', course);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('categories/all')
+  @ApiOperation({
+    summary: 'Fetch all course categories',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Categories fetched successfully',
+    type: CreateSuccessResponse,
+  })
+  async getCourseCategories(): Promise<any> {
+    try {
+      const categories = await this.courseService.getCourseCategories();
+      return CreateSuccessResponse('Categories fetched successfully', categories);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('categories/courses')
+  @ApiOperation({
+    summary: 'Fetch all course categories with their respective courses',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Categories with courses fetched successfully',
+    type: CreateSuccessResponse,
+  })
+  async getCategoriesWithCourses(): Promise<any> {
+    try {
+      const categoriesWithCourses = await this.courseService.getCategoriesWithCourses();
+      return CreateSuccessResponse('Categories with courses fetched successfully', categoriesWithCourses);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  
 }
+

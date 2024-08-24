@@ -12,9 +12,9 @@ export class CourseService {
 
  async createCourse(course: CreateCourseDto): Promise<any> {
   try {
-    const { courseName, description, levels, subjects } = course;
+    const { courseName, description, levels,  category } = course;
 
-    if (isEmpty(courseName) || isEmpty(description) || isEmpty(levels)  || !Array.isArray(subjects) || subjects.length === 0)
+    if (isEmpty(courseName) || isEmpty(description) || isEmpty(levels))
       throw new HttpException(
         'All fields are required.',
         HttpStatus.BAD_REQUEST,
@@ -29,10 +29,8 @@ export class CourseService {
         levelDescription: levels.levelDescription ? levels.levelDescription : '',
         levelOtherDescription: levels.levelOtherDescription ? levels.levelOtherDescription : ''
       },
-      subjects: subjects.map(subject => ({
-        subjectName: subject.subjectName,
-        description: subject.description
-      }))
+
+      category
     });
     return newCourse;
   } catch (error) {
@@ -46,13 +44,13 @@ export class CourseService {
 
   async updateCourse(course: UpdateCourseDto): Promise<any> {
     try {
-      const { id, courseName, description, levels, subjects } = course;
+      const { id, courseName, description, levels,  category } = course;
       const updatedCourse = await this.courseRepository.updateCourse({
         id,
         courseName,
         description,
         levels,
-        subjects
+        category
       });
       return updatedCourse;
     } catch (error) {
@@ -65,6 +63,17 @@ export class CourseService {
   async getCourses(): Promise<any> {
     try {
       const course = await this.courseRepository.fetchCourse();
+      return course;
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+   async getCoursesPublic(): Promise<any> {
+    try {
+      const course = await this.courseRepository.fetchCoursePublic();
       return course;
     } catch (error) {
       throw new HttpException(
@@ -119,5 +128,64 @@ export class CourseService {
     } catch (error) {}
   }
 
-  
+  async deleteCourseById(id: string): Promise<void> {
+    try {
+      if (isEmpty(id))
+        throw new HttpException(
+          'Id parameter is required.',
+          HttpStatus.BAD_REQUEST,
+        );
+      await this.courseRepository.deleteCourseById(id);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+    async updateStatusCourse(id: string): Promise<void> {
+    try {
+      if (isEmpty(id))
+        throw new HttpException(
+          'Id parameter is required.',
+          HttpStatus.BAD_REQUEST,
+        );
+      await this.courseRepository.updateStatusCourse(id);
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getCourseCategories(): Promise<any> {
+    try {
+      const categories = await this.courseRepository.fetchCourseCategories();
+      return categories;
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+   async getCategoriesWithCourses(): Promise<any> {
+    try {
+      const categories = await this.courseRepository.fetchCategoriesWithCourses();
+      return categories
+    } catch (error) {
+      throw new HttpException(
+        'Failed to fetch categories with courses',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
 }
+
+  
+

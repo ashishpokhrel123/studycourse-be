@@ -29,6 +29,14 @@ export class SubjectDTO {
   description: string;
 }
 
+export class CourseCategoryDTO {
+  @ApiProperty({ description: 'The name of the course category' })
+  @IsNotEmpty()
+  courseCategory: string;
+
+  
+}
+
 export class CreateCourseDto {
   @ApiProperty({ description: 'The name of the course' })
   @IsNotEmpty()
@@ -42,7 +50,11 @@ export class CreateCourseDto {
   @IsNotEmpty()
   levels: StudyLevelDTO;
 
-  @ApiProperty({ description: 'The subjects of the course' })
+  // @ApiProperty({ description: 'The subjects of the course' })
+  // @IsNotEmpty()
+  // subjects: SubjectDTO[];
+
+  @ApiProperty({ description: 'The category of the course' })
   @IsNotEmpty()
-  subjects: SubjectDTO[];
+  category: CourseCategoryDTO;
 }

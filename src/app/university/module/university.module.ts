@@ -8,10 +8,12 @@ import { FinanceDetails } from 'src/common/entities/financeDetails-university.en
 import { Destination } from 'src/common/entities/destination';
 import { Course } from 'src/common/entities/course.entity';
 import { Subject } from 'src/common/entities/subject.entity';
+import { UniversityCampuses } from 'src/common/entities/university-campuses.entity';
+import { UniversityCourseSubject } from 'src/common/entities/university-course-subject.entity';
 
 @Module({
    imports: [
-    TypeOrmModule.forFeature([University, FinanceDetails, Destination, Course, Subject]),
+    TypeOrmModule.forFeature([University, FinanceDetails, Destination, Course, Subject, UniversityCampuses, UniversityCourseSubject]),
   ],
   controllers: [UniversityController],
   providers: [UniversityService, UniversityRepository],

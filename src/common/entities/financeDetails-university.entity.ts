@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { University } from './university.entity';
+import { Course } from './course.entity';
 
 
 @Entity()
@@ -19,9 +20,11 @@ export class FinanceDetails {
   @Column({ nullable: true })
   scholarshipDetails: string;
 
-  @OneToOne(() => University)
-  @JoinColumn()
+  @ManyToOne(() => University, university => university.financeDetails)
   university: University;
+
+  @ManyToOne(() => Course, course => course.financeDetails)
+  course: Course;
   
   @Column({ nullable: true, type: 'timestamptz' })
   createdAt: Date;

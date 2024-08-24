@@ -139,4 +139,26 @@ export class DestinationController {
     const result = await this.destinationService.getUniversityByDestination(slug);
     return CreateSuccessResponse(result.message, result.data);
   }
+
+//    @Delete(':id') // Define DELETE route for deleting a destination
+//   @ApiOperation({
+//     summary: 'Delete a Study Destination',
+//   })
+//   @ApiResponse({
+//     status: HttpStatus.OK,
+//     description: 'Destination deleted successfully',
+//     type: CreateSuccessResponse,
+//   })
+//   async deleteDestination(@Param('id') id: string): Promise<any> {
+//     try {
+//       await this.destinationService.deleteDestination(id);
+//       return CreateSuccessResponse('Destination deleted successfully', {});
+//     } catch (error) {
+//       throw new HttpException(
+//         'Internal Server Error',
+//         HttpStatus.INTERNAL_SERVER_ERROR,
+//       );
+//     }
+//   }
+// }
 }

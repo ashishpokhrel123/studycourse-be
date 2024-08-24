@@ -12,6 +12,10 @@ import {
 import { StudyLevel } from './studyLevel.entity';
 import { Subject } from './subject.entity';
 import { University } from './university.entity';
+import { FinanceDetails } from './financeDetails-university.entity';
+import { UniversityCourseSubject } from './university-course-subject.entity';
+import { CourseCategory } from './course-category';
+
 
 @Entity()
 export class Course {
@@ -43,7 +47,16 @@ export class Course {
   @JoinTable()
   universities: University[];
 
-   @Column({ nullable: true, type: 'timestamptz' })
+  @OneToMany(() => FinanceDetails, (financeDetails) => financeDetails.course)
+  financeDetails: FinanceDetails[];
+
+  @ManyToOne(() => CourseCategory, (cc) => cc.courses)
+  courseCategory: CourseCategory;
+
+  @OneToMany(() => UniversityCourseSubject, (ucs) => ucs.course)
+  universityCourseSubject: UniversityCourseSubject;
+
+  @Column({ nullable: true, type: 'timestamptz' })
   createdAt: Date;
 
   @Column({ nullable: true })

@@ -12,11 +12,13 @@ import { StudyLevelRepository } from 'src/app/study-level/respository/studyLevel
 import { Subject } from 'src/common/entities/subject.entity';
 import slugify from 'slugify';
 import {
+  CourseCategoryDTO,
   CreateCourseDto,
   StudyLevelDTO,
   SubjectDTO,
 } from '../dto/create-course.dto';
 import { StudyLevel } from 'src/common/entities/studyLevel.entity';
+import { CourseCategory } from 'src/common/entities/course-category';
 
 @Injectable()
 export class CourseRepository {
@@ -28,11 +30,14 @@ export class CourseRepository {
     @InjectRepository(Subject)
     private readonly subjectRepository: Repository<Subject>,
     private readonly studyLevelRepository: StudyLevelRepository,
+
+    @InjectRepository(CourseCategory)
+    private readonly courseCategoryRepository: Repository<CourseCategory>,
   ) {}
 
   async createCourse(courseDto: CreateCourseDto): Promise<any> {
     try {
-      const { courseName, description, levels, subjects } = courseDto;
+      const { courseName, description, levels, category } = courseDto;
 
       // Create a new course
       const courseSlug = slugify(courseName.toLowerCase());
@@ -42,6 +47,10 @@ export class CourseRepository {
         description,
         createdAt: new Date(),
       });
+
+      // create or update course category
+      const courseCategory = await this.fetchOrCreateCourseCategory(category);
+      createdCourse.courseCategory = courseCategory;
 
       // Fetch or create study level
       const studyLevel = await this.fetchOrCreateStudyLevel(levels);
@@ -53,7 +62,7 @@ export class CourseRepository {
       const savedCourse = await this.courseRepository.save(createdCourse);
 
       // Create or update subjects
-      await this.createOrUpdateSubjects(subjects, savedCourse);
+      // await this.createOrUpdateSubjects(subjects, savedCourse);
 
       return {
         status: HttpStatus.OK,
@@ -66,6 +75,24 @@ export class CourseRepository {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  private async fetchOrCreateCourseCategory(
+    category: CourseCategoryDTO,
+  ): Promise<CourseCategory> {
+    let existingCategory = await this.courseCategoryRepository.findOne({
+      where: { courseCategory: category.courseCategory },
+    });
+
+    if (!existingCategory) {
+      existingCategory = this.courseCategoryRepository.create({
+        courseCategory: category.courseCategory,
+        createdAt: new Date(),
+      });
+      await this.courseCategoryRepository.save(existingCategory);
+    }
+
+    return existingCategory;
   }
 
   private async fetchOrCreateStudyLevel(
@@ -96,48 +123,60 @@ export class CourseRepository {
     return existingStudyLevel;
   }
 
-private async createOrUpdateSubjects(subjects: any[], course: Course): Promise<void> {
-  console.log(subjects, "subjects")
-  for (const subjectDto of subjects) {
-    let subject = await this.subjectRepository.findOne({ where: { subjectName: subjectDto.subjectName }});
+  private async createOrUpdateSubjects(
+    subjects: any[],
+    course: Course,
+  ): Promise<void> {
+    console.log(subjects, 'subjects');
+    for (const subjectDto of subjects) {
+      let subject = await this.subjectRepository.findOne({
+        where: { subjectName: subjectDto.subjectName },
+      });
 
-    if (!subject) {
-      subject = await this.createSubject(subjectDto, course);
-    } else {
-      this.updateSubject(subject, subjectDto, course);
+      if (!subject) {
+        subject = await this.createSubject(subjectDto, course);
+      } else {
+        this.updateSubject(subject, subjectDto, course);
+      }
+
+      await this.subjectRepository.save(subject);
     }
-
-    await this.subjectRepository.save(subject);
   }
-}
 
-private async createSubject(subjectDto: any, course: Course): Promise<Subject> {
-  console.log(subjectDto, "subjectDto")
-  return this.subjectRepository.create({
-    subjectName: subjectDto.subjectName,
-    description: subjectDto.description,
-    course: course
-  });
-}
+  private async createSubject(
+    subjectDto: any,
+    course: Course,
+  ): Promise<Subject> {
+    console.log(subjectDto, 'subjectDto');
+    return this.subjectRepository.create({
+      subjectName: subjectDto.subjectName,
+      description: subjectDto.description,
+      course: course,
+    });
+  }
 
-private updateSubject(subject: Subject, subjectDto: any, course: Course): void {
-  console.log(subject, 'subj')
-  subject.description = subjectDto.subjectName;
-  subject.description = subjectDto.description;
-  subject.course = course;
-}
-
-
+  private updateSubject(
+    subject: Subject,
+    subjectDto: any,
+    course: Course,
+  ): void {
+    console.log(subject, 'subj');
+    subject.description = subjectDto.subjectName;
+    subject.description = subjectDto.description;
+    subject.course = course;
+  }
 
   async updateCourse({
     id,
     courseName,
     description,
     levels,
-    subjects,
+    category,
   }): Promise<any> {
     try {
-      const existingCourse = await this.courseRepository.findOne({where: {id}});
+      const existingCourse = await this.courseRepository.findOne({
+        where: { id },
+      });
 
       if (!existingCourse) {
         throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
@@ -150,6 +189,12 @@ private updateSubject(subject: Subject, subjectDto: any, course: Course): void {
         existingCourse.description = description;
       }
 
+      // Fetch or create course category
+      if (category) {
+        const courseCategory = await this.fetchOrCreateCourseCategory(category);
+        existingCourse.courseCategory = courseCategory;
+      }
+
       // Fetch or create study level
       if (levels) {
         const studyLevel = await this.fetchOrCreateStudyLevel(levels);
@@ -159,11 +204,11 @@ private updateSubject(subject: Subject, subjectDto: any, course: Course): void {
       // Save the updated course
       const updatedCourse = await this.courseRepository.save(existingCourse);
 
-      // Create or update subjects
-      if (subjects) {
-        console.log(subjects, "main")
-        await this.createOrUpdateSubjects(subjects, updatedCourse);
-      }
+      // // Create or update subjects
+      // if (subjects) {
+      //   console.log(subjects, 'main');
+      //   await this.createOrUpdateSubjects(subjects, updatedCourse);
+      // }
 
       return {
         status: HttpStatus.CREATED,
@@ -183,6 +228,12 @@ private updateSubject(subject: Subject, subjectDto: any, course: Course): void {
     return this.courseRepository.find({ relations: ['subject'] });
   }
 
+  async fetchCoursePublic(): Promise<any> {
+    return this.courseRepository.find({
+      where: { isActive: true },
+      relations: ['subject'],
+    });
+  }
   async fetchCourseBySlug({ slug }: any): Promise<any> {
     return this.courseRepository.findOne({ where: { slug } });
   }
@@ -193,6 +244,7 @@ private updateSubject(subject: Subject, subjectDto: any, course: Course): void {
         .createQueryBuilder('course')
         .where('course.id = :id', { id })
         .leftJoinAndSelect('course.studyLevel', 'studyLevel')
+        .leftJoinAndSelect('course.courseCategory', 'courseCategory')
         .leftJoinAndSelect('course.subject', 'subject')
         .getOne();
 
@@ -266,6 +318,86 @@ private updateSubject(subject: Subject, subjectDto: any, course: Course): void {
     } catch (error) {
       console.error('Failed to fetch courses by level:', error.message);
       throw new Error('Failed to fetch courses by level');
+    }
+  }
+
+  async deleteCourseById(id: string): Promise<void> {
+    try {
+      const course = await this.courseRepository.findOne({ where: { id } });
+      if (!course) {
+        throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
+      }
+
+      const result = await this.courseRepository.delete(id);
+      if (result.affected === 0) {
+        throw new HttpException(
+          'Failed to delete course',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateStatusCourse(
+    id: string,
+  ): Promise<{ status: number; message: string }> {
+    try {
+      const course = await this.courseRepository.findOne({ where: { id } });
+      if (!course) {
+        throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
+      }
+      const reqCourse = {
+        id: course.id,
+        updatedAt: new Date(),
+        isActive: !course.isActive,
+      };
+      await this.courseRepository.update(course.id, reqCourse);
+
+      return { status: HttpStatus.OK, message: 'Course updated successfully' };
+    } catch (error) {
+      console.error(error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async fetchCourseCategories(): Promise<CourseCategory[]> {
+    try {
+      return await this.courseCategoryRepository.find();
+    } catch (error) {
+      console.error('Error fetching course categories:', error);
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async fetchCategoriesWithCourses(): Promise<any> {
+    try {
+      const categories = await this.courseCategoryRepository.find({
+        relations: ['courses'], // Fetch related courses
+      });
+      return categories;
+    } catch (error) {
+      console.error('Error fetching categories with courses:', error);
+      throw new HttpException(
+        'Failed to fetch categories with courses',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

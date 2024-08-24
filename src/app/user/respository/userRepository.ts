@@ -40,12 +40,13 @@ export class UserRepository {
 
   async findUserByEmailWithPassword(
     email: string,
-  ): Promise<ScUser | undefined> {
+  ): Promise<ScUser | any> {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .where('user.email = :email', { email })
       .addSelect('user.password')
       .getOne();
+    console.log(user, "user")
 
     return user;
   }

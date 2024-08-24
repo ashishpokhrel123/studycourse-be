@@ -186,6 +186,18 @@ await this.blogRepository.save(blog);
     return blogs;
   }
 
+  async deleteBlogById(id: string): Promise<void> {
+    try {
+      await this.blogRepository.delete(id);
+    } catch (error) {
+      this.defaultLogger.error(error);
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async getUser(id: string) {
     return await this.userRepository.findOne({ where: { id } });
   }

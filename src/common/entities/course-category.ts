@@ -2,39 +2,26 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
 import { Course } from './course.entity';
-import { UniversityCourseSubject } from './university-course-subject.entity';
 
 @Entity()
-export class Subject {
+export class CourseCategory {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  subjectName: string;
+  courseCategory: string;
 
-  @Column({nullable:true})
-  description: string;
-
-  @Column({ default: false })
-  isFeatured: boolean;
-
-  @ManyToOne(() => Course, (course) => course.subject)
-  course: Course;
-
-  @OneToMany(() => UniversityCourseSubject, (ucs) => ucs.subject)
-  universityCourseSubject: UniversityCourseSubject;
-
-  @Column({ nullable: true})
-  startDate: Date;
-
-  @Column({ nullable: true})
-  duration: number;
+  @OneToMany(() => Course, (course) => course.courseCategory)
+  courses: Course;
 
   @Column({ nullable: true, type: 'timestamptz' })
   createdAt: Date;

@@ -86,21 +86,22 @@ export class UniversityController {
     description: 'Internal server error',
   })
   async updateUniversity(
-  @Body() updateUniversityDto: UpdateUniversityDto,
-): Promise<any> {
-  try {
-    console.log(updateUniversityDto, "controller")
-    const updatedUniversity = await this.universityService.updateUniversity(updateUniversityDto);
-    return CreateSuccessResponse('University updated successfully');
-  } catch (error) {
-    console.error(error);
-    throw new HttpException(
-      'Internal Server Error',
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
+    @Body() updateUniversityDto: UpdateUniversityDto,
+  ): Promise<any> {
+    try {
+      console.log(updateUniversityDto, 'controller');
+      const updatedUniversity = await this.universityService.updateUniversity(
+        updateUniversityDto,
+      );
+      return CreateSuccessResponse('University updated successfully');
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
-}
-
 
   @Get('all')
   @ApiOperation({
@@ -119,6 +120,32 @@ export class UniversityController {
   async getAllUniversities(): Promise<University[]> {
     try {
       const universities = await this.universityService.getUniversity();
+      return universities;
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('public/all')
+  @ApiOperation({
+    summary: 'Fetch all universities',
+    description: 'Retrieve all universities available',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Universities fetched successfully',
+    type: [University],
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error',
+  })
+  async getAllUniversitiesPublic(): Promise<University[]> {
+    try {
+      const universities = await this.universityService.getUniversityPublic();
       return universities;
     } catch (error) {
       throw new HttpException(
@@ -163,7 +190,9 @@ export class UniversityController {
   async getUniversityBySlug(@Param('slug') slug: string): Promise<any> {
     console.log(slug, 'slug from controller');
     try {
-      const university = await this.universityService.getUniversityBySlug({slug});
+      const university = await this.universityService.getUniversityBySlug({
+        slug,
+      });
       if (!university) {
         throw new NotFoundException('University not found');
       }
@@ -253,6 +282,55 @@ export class UniversityController {
       return this.universityService.getUniversityByIds(idArray);
     } catch (error) {
       // Handle error here
+    }
+  }
+  @Put(':id')
+  @ApiOperation({
+    summary: 'Update a university  status by ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'University status updated successfully',
+    type: CreateSuccessResponse,
+  })
+  async updateStausUniversity(@Param('id') id: string): Promise<any> {
+    try {
+      const university = await this.universityService.updateStatusUniversity(
+        id,
+      );
+      return CreateSuccessResponse(
+        'University updated successfully',
+        university,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('subjects/:id')
+  @ApiOperation({
+    summary: 'Fetch by university Subject  status by ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'University subject fetch successfully',
+    type: CreateSuccessResponse,
+  })
+  async fetchUniversityBySubject(@Param('id') id: string): Promise<any> {
+    console.log(id,"id")
+    try {
+      const university = await this.universityService.fetchSubjectsByUniversity(
+        id
+      );
+      return university
+    } catch (error) {
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

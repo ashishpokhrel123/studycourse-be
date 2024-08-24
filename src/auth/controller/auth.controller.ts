@@ -55,6 +55,8 @@ export class AuthController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request' })
   async login(@Body() loginDto: LoginDTO):Promise<any> {
     const { email, password } = loginDto;
+ 
+    console.log(await this.authService.login(email, password), "test")
 
     const { access_token, refresh_token } = await this.authService.login(
       email,

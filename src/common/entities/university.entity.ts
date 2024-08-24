@@ -12,6 +12,8 @@ import {
 import { FinanceDetails } from './financeDetails-university.entity';
 import { Destination } from './destination';
 import { Course } from './course.entity';
+import { UniversityCampuses } from './university-campuses.entity';
+import { UniversityCourseSubject } from './university-course-subject.entity';
 
 @Entity()
 export class University {
@@ -21,15 +23,6 @@ export class University {
   @Column()
   universityName: string;
 
-  @Column()
-  universityAddress: string;
-
-  @Column()
-  universityContactNumber: string;
-
-  @Column()
-  universityEmail: string;
-
 
   @Column()
   slug: string;
@@ -37,10 +30,10 @@ export class University {
   @Column()
   worldRanking: number;
 
-  @Column()
-  countryRanking: number;
+  // @Column()
+  // countryRanking: number;
 
-  @Column({nullable:true})
+  @Column({ nullable: true })
   universityImage: string;
 
   @Column()
@@ -49,10 +42,18 @@ export class University {
   @Column({ default: false })
   isFeatured: boolean;
 
- @OneToOne(() => FinanceDetails, (fd) => fd.university) // specify inverse side as a second parameter
-  financeDetails: FinanceDetails
+  
 
- @ManyToOne(() => Destination, destination => destination.universities)
+  @OneToOne(() => FinanceDetails, (fd) => fd.university) // specify inverse side as a second parameter
+  financeDetails: FinanceDetails;
+
+  @OneToMany(() => UniversityCourseSubject, (ucs) => ucs.university) // specify inverse side as a second parameter
+  courseSubject: UniversityCourseSubject;
+
+  @OneToMany(() => UniversityCampuses, (uc) => uc.university)
+  campuses: UniversityCampuses;
+
+  @ManyToOne(() => Destination, (destination) => destination.universities)
   destination: Destination;
 
   @Column({ default: false })
@@ -61,7 +62,7 @@ export class University {
   @Column({ nullable: true, type: 'timestamptz' })
   createdAt: Date;
 
-  @ManyToMany(() => Course,(course) => course.universities)
+  @ManyToMany(() => Course, (course) => course.universities)
   courses: Course[];
 
   @Column({ nullable: true })

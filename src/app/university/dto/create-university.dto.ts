@@ -1,8 +1,16 @@
-
-
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { v4 as uuidv4 } from 'uuid';
+
+
 
 export class FinanceDetailsDto {
   @ApiProperty({ description: 'The tuition fee of the university' })
@@ -26,22 +34,53 @@ export class FinanceDetailsDto {
   scholarshipDetails?: string;
 }
 
+export class CourseDetailsDto {
+  @ApiProperty({ description: 'The tuition fee of the university' })
+  @IsNotEmpty()
+  @IsString()
+  courseId: string;
+
+  @ApiProperty({ description: 'The destination ID of the university' })
+  @IsArray()
+  subjects: SubjectDto[];
+
+  @ApiProperty({ description: 'The tuition fee of the university' })
+  @IsNotEmpty()
+  financeDetails: CampusesDto[];
+
+ 
+}
+
+export class SubjectDto {
+   @ApiProperty({ description: 'The subject of course' })
+  @IsNotEmpty()
+  @IsString()
+  subjectName: string;
+
+}
+
+export class CampusesDto {
+  @ApiProperty({ description: 'The campus location of the university' })
+  @IsNotEmpty()
+  @IsString()
+  location: string;
+
+  @ApiProperty({ description: 'The campus email of the university' })
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+
+  @ApiProperty({ description: 'The campus contact of the university' })
+  @IsNotEmpty()
+  @IsString()
+  contact: string;
+}
+
 export class CreateUniversityDto {
   @ApiProperty({ description: 'The name of the university' })
   @IsNotEmpty()
   universityName: string;
 
-  @ApiProperty({ description: 'The name of the university' })
-  @IsNotEmpty()
-  universityAddress: string;
-
-  @ApiProperty({ description: 'The name of the university' })
-  @IsNotEmpty()
-  universityContactNumber: string;
-
-  @ApiProperty({ description: 'The name of the university' })
-  @IsNotEmpty()
-  universityEmail: string;
 
   @ApiProperty({ description: 'The slug of the university (optional)' })
   @IsOptional()
@@ -62,7 +101,7 @@ export class CreateUniversityDto {
   worldRanking: number;
 
   @ApiProperty({ description: 'The country ranking of the university' })
-  @IsNotEmpty()
+  // @IsNotEmpty()
   countryRanking: number;
 
   @ApiProperty({ description: 'The image URL of the university (optional)' })
@@ -73,17 +112,17 @@ export class CreateUniversityDto {
   @IsNotEmpty()
   destination: string;
 
-
   @ApiProperty({ description: 'The destination ID of the university' })
   @IsArray()
-courses: string[];
+  courses: CourseDetailsDto[];
 
+  
 
-  @ApiProperty({ description: 'FinanceDetails of the university' })
+  @ApiProperty({ description: 'Campuses of the university' })
   @IsNotEmpty()
-  financeDetails: FinanceDetailsDto;
+  campuses: CampusesDto[];
 
-  @ApiProperty({ description: 'created At' })
-  @IsOptional()
-  createdAt?: Date;
+  // @ApiProperty({ description: 'created At' })
+  // @IsOptional()
+  // createdAt?: Date;
 }
