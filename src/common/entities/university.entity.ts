@@ -51,7 +51,7 @@ export class University {
   courseSubject: UniversityCourseSubject;
 
   @OneToMany(() => UniversityCampuses, (uc) => uc.university)
-  campuses: UniversityCampuses;
+  campuses: UniversityCampuses[];
 
   @ManyToOne(() => Destination, (destination) => destination.universities)
   destination: Destination;

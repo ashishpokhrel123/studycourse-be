@@ -44,9 +44,10 @@ export class StudyLevelRepository {
     return this.studyLevelRepository.findOne({where: { slug}});
   }
 
-   async fetchStudyLevelByName({ name }: any): Promise<StudyLevel | undefined> {
-    return this.studyLevelRepository.findOne({where: { name}});
-  }
+  async fetchStudyLevelByName(name: string): Promise<StudyLevel | undefined> {
+  return this.studyLevelRepository.findOne({ where: { name } });
+}
+
 
 async fetchStudyLevelByField(fieldName: string, fieldValue: any): Promise<StudyLevel | undefined> {
   const query = { [fieldName]: fieldValue };

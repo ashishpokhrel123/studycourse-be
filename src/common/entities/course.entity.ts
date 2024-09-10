@@ -47,7 +47,9 @@ export class Course {
   @JoinTable()
   universities: University[];
 
-  @OneToMany(() => FinanceDetails, (financeDetails) => financeDetails.course)
+  @OneToMany(() => FinanceDetails, (financeDetails) => financeDetails.course, {
+    onDelete: 'CASCADE', // Ensure that related entries are deleted when a university is deleted
+  })
   financeDetails: FinanceDetails[];
 
   @ManyToOne(() => CourseCategory, (cc) => cc.courses)

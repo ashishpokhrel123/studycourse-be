@@ -116,11 +116,8 @@ export class CourseRepository {
     newStudyLevelDto.slug = slug;
     newStudyLevelDto.description = level.levelDescription;
     newStudyLevelDto.otherDescription = level.levelOtherDescription;
-    existingStudyLevel = await this.studyLevelRepository.createStudyLevel(
-      newStudyLevelDto,
-    );
-
-    return existingStudyLevel;
+    existingStudyLevel = await this.studyLevelRepository.createStudyLevel(newStudyLevelDto);
+  return existingStudyLevel;
   }
 
   private async createOrUpdateSubjects(
@@ -198,6 +195,7 @@ export class CourseRepository {
       // Fetch or create study level
       if (levels) {
         const studyLevel = await this.fetchOrCreateStudyLevel(levels);
+        console.log(studyLevel,"sl")
         existingCourse.studyLevel = studyLevel;
       }
 

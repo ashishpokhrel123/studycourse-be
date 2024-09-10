@@ -1,10 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import {
-  getConnection,
-  getRepository,
-  Repository,
-  In,
-} from 'typeorm';
+import { getConnection, getRepository, Repository, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { University } from 'src/common/entities/university.entity';
 import {
@@ -156,102 +151,50 @@ export class UniversityRepository {
     };
   }
 
-  // async updateUniversity({
-  //   id,
-  //   universityName,
-  //   description,
-  //   universityImage,
-  //   worldRanking,
-  //   countryRanking,
-  //   campuses,
-  //   destination,
-  //   courses,
-  // }): Promise<{ status: number; message: string | HttpException }> {
-  //   try {
-  //     const university = await this.getUniversityByIdWithRelations(id);
-
-  //     this.updateUniversityFields(university, {
-  //       universityName,
-  //       description,
-  //       universityImage,
-  //       worldRanking,
-  //       countryRanking,
-  //       destination,
-  //     });
-
-  //     // if (financeDetails) {
-  //     //   await this.updateFinanceDetails(university, financeDetails);
-  //     // }
-
-  //     if (campuses) {
-  //       await this.updateUniversityCampus(university, campuses);
-  //     }
-
-  //     if (courses) {
-  //       await this.updateUniversityCourses(university, courses);
-  //     }
-
-  //     const updatedUniversity = await this.universityRepository.save(
-  //       university,
-  //     );
-
-  //     return {
-  //       status: HttpStatus.OK,
-  //       message: 'University updated successfully',
-  //     };
-  //   } catch (error) {
-  //     console.log(error);
-  //     if (error instanceof HttpException) {
-  //       throw error;
-  //     } else {
-  //       throw new HttpException(
-  //         'Internal Server Error',
-  //         HttpStatus.INTERNAL_SERVER_ERROR,
-  //       );
-  //     }
-  //   }
-  // }
-
-async updateUniversity({
-  id,
-  universityName,
-  description,
-  universityImage,
-  worldRanking,
-  countryRanking,
-  campuses,
-  destination,
-  courses,
-}: any): Promise<{ status: number; message: string | HttpException }> {
-  try {
-    // Fetch the existing university
-    const existingUniversity = await this.universityRepository.findOne({
+  async updateUniversity({
+    id,
+    universityName,
+    description,
+    universityImage,
+    worldRanking,
+    campuses,
+    destination,
+    courses,
+  }: any): Promise<any> {
+    let existingUniversity = await this.universityRepository.findOne({
       where: { id },
-      relations: ['destination', 'campuses', 'courses', 'courseSubject', 'courseSubject.subject', 'courseSubject.course'],
+      relations: ['destination', 'campuses', 'courses', 'courseSubject'],
     });
 
-    if (!existingUniversity) {
+    if (!existingUniversity)
       throw new HttpException('University not found', HttpStatus.NOT_FOUND);
-    }
 
-    // Check for existing university with new name
     if (universityName !== existingUniversity.universityName) {
       const existingUniversityWithName = await this.universityRepository
         .createQueryBuilder('university')
-        .where('university.universityName = :uniName', { uniName: universityName })
+        .where(
+          'university.universityName = :uniName AND university.id != :id',
+          {
+            uniName: universityName,
+            id,
+          },
+        )
         .getOne();
 
       if (existingUniversityWithName) {
-        throw new HttpException('University with name already exists', HttpStatus.CONFLICT);
+        throw new HttpException(
+          'University with this name already exists',
+          HttpStatus.CONFLICT,
+        );
       }
     }
 
     // Fetch the destination
     const fetchDestination = await this.studyDestinationRepository.findOne({
-      where: { id: destination.id },
+      where: { id: destination },
     });
     if (!fetchDestination) {
-      throw new Error('Destination not found');
+      throw new HttpException('Destination not found', HttpStatus.NOT_FOUND);
     }
 
     // Update university entity
@@ -259,153 +202,223 @@ async updateUniversity({
     existingUniversity.description = description;
     existingUniversity.universityImage = universityImage;
     existingUniversity.worldRanking = worldRanking;
-    // existingUniversity.countryRanking = countryRanking;
     existingUniversity.destination = fetchDestination;
 
-    // Save the updated university entity
-    const updatedUniversity = await this.universityRepository.save(existingUniversity);
-
     // Update campuses
-    const existingCampuses = await this.universityCampusRepository.find({ where: { university: updatedUniversity } });
-    const campusIdsToKeep = campuses.map((campus: any) => campus.id);
-    const campusesToRemove = existingCampuses.filter((campus) => !campusIdsToKeep.includes(campus.id));
+    const existingCampuses = await this.universityCampusRepository.find({
+      where: { university: existingUniversity },
+    });
 
-    await this.universityCampusRepository.remove(campusesToRemove);
+    const campusIdsToKeep = campuses.map((campus) => campus.id).filter(Boolean);
 
-    const updatedCampuses = await Promise.all(
+    // Identify campuses to remove and remove them
+    const campusesToRemove = existingCampuses.filter(
+      (campus) => !campusIdsToKeep.includes(campus.id),
+    );
+    if (campusesToRemove.length) {
+      await this.universityCampusRepository.remove(campusesToRemove);
+    }
+
+    // Update or create campuses based on the payload
+    await Promise.all(
       campuses.map(async (campus) => {
-        const existingCampus = await this.universityCampusRepository.findOne({ where: { id: campus.id } });
-
-        if (existingCampus) {
+        if (campus.id) {
           // Update existing campus
-          Object.assign(existingCampus, campus);
-          return await this.universityCampusRepository.save(existingCampus);
+          const existingCampus = existingCampuses.find(
+            (c) => c.id === campus.id,
+          );
+          if (existingCampus) {
+            Object.assign(existingCampus, campus);
+            try {
+              await this.universityCampusRepository.save(existingCampus);
+            } catch (error) {
+              console.error('Error updating campus:', error);
+            }
+          } else {
+            console.error('Campus ID exists but not found:', campus.id);
+          }
         } else {
           // Create new campus
-          const universityCampusEntity = this.universityCampusRepository.create({
-            ...campus,
-            university: updatedUniversity,
-          });
-          return await this.universityCampusRepository.save(universityCampusEntity);
+          try {
+            await this.universityCampusRepository.save({
+              ...campus,
+              university: existingUniversity,
+            });
+          } catch (error) {
+            console.error('Error saving new campus:', error);
+          }
         }
       }),
     );
 
-    // Update courses and subjects
-    const updatedCourses = await Promise.all(
-      courses.map(async (courseItem: any) => {
-        const courseId = courseItem.courses;
-        const fetchedCourse = await this.courseRepository.findOne({
-          where: { id: courseId },
-          relations: ['subjects'],
-        });
-        if (!fetchedCourse) {
-          throw new Error(`Course with ID ${courseId} not found`);
-        }
+    await Promise.all(
+      courses.map(async (cou: any) => {
+        const payloadCourseIds = courses
+          .map((course) => course.course)
+          .filter(Boolean);
 
-        const existingFinanceDetails = await this.financeDetailsRepository.findOne({
-          where: { university: updatedUniversity, course: fetchedCourse },
-        });
-
-        if (existingFinanceDetails) {
-          // Update existing finance details
-          Object.assign(existingFinanceDetails, {
-            tuitionFee: courseItem.tuitionFee,
-            currency: courseItem.currency,
-            financialAidAvailable: courseItem.financialAidAvailable,
-            scholarshipDetails: courseItem.scholarshipDetails,
+        // Find existing courses linked to the university
+        const existingCourses =
+          await this.universityCourseSubjectRepository.find({
+            where: { university: existingUniversity },
+            relations: ['course', 'subject'],
           });
-          await this.financeDetailsRepository.save(existingFinanceDetails);
-        } else {
-          // Create new finance details
-          const financeDetails = this.financeDetailsRepository.create({
-            tuitionFee: courseItem.tuitionFee,
-            currency: courseItem.currency,
-            financialAidAvailable: courseItem.financialAidAvailable,
-            scholarshipDetails: courseItem.scholarshipDetails,
-            university: updatedUniversity,
-            course: fetchedCourse,
-          });
-          await this.financeDetailsRepository.save(financeDetails);
-        }
 
-        // Fetch subjects from UniversityCourseSubject table
-        const existingSubjects = await this.universityCourseSubjectRepository.find({
-          where: { course: fetchedCourse, university: updatedUniversity },
-          relations: ['subject'],
-        });
-
-        const subjectNamesToKeep = courseItem.subjects.map((subject: any) => subject.subjectName);
-
-        const updatedSubjects = await Promise.all(
-          courseItem.subjects.map(async (subject: any) => {
-            let existingSubject = await this.subjectRepository.findOne({
-              where: { subjectName: subject.subjectName },
-            });
-
-            if (existingSubject) {
-              // Update existing subject
-              Object.assign(existingSubject, subject);
-              existingSubject = await this.subjectRepository.save(existingSubject);
-            } else {
-              // Create new subject
-              const subjectEntity = this.subjectRepository.create({
-                subjectName: subject.subjectName,
-                description: subject.description,
-              });
-              existingSubject = await this.subjectRepository.save(subjectEntity);
-            }
-
-            // Ensure UniversityCourseSubject exists
-            let universityCourseSubject = await this.universityCourseSubjectRepository.findOne({
-              where: { university: updatedUniversity, course: fetchedCourse, subject: existingSubject },
-            });
-
-            if (!universityCourseSubject) {
-              universityCourseSubject = this.universityCourseSubjectRepository.create({
-                university: updatedUniversity,
-                course: fetchedCourse,
-                subject: existingSubject,
-              });
-              await this.universityCourseSubjectRepository.save(universityCourseSubject);
-            }
-
-            return existingSubject;
-          }),
+        // Extract existing course IDs
+        const existingCourseIds = existingCourses.map(
+          (unicourse) => unicourse.course.id,
         );
 
-        // fetchedCourse.subjects = updatedSubjects;
-        return this.courseRepository.save(fetchedCourse);
+        // Identify courses to remove
+        const coursesToRemove = existingCourses.filter(
+          (unicourse) => !payloadCourseIds.includes(unicourse.course.id),
+        );
+
+        // Remove courses that are not in the payload
+        if (coursesToRemove.length) {
+          for (const courseToRemove of coursesToRemove) {
+            // Delete related subjects first
+            const relatedSubjects = await this.subjectRepository.find({
+              where: { course: courseToRemove.course },
+            });
+
+            const finaceSubjects = await this.financeDetailsRepository.find({
+              where: { course: courseToRemove.course },
+            });
+
+            if (relatedSubjects.length) {
+              await this.subjectRepository.remove(relatedSubjects);
+            }
+
+            if (finaceSubjects.length) {
+              await this.financeDetailsRepository.remove(finaceSubjects);
+            }
+
+            // Now, remove the course
+            await this.universityCourseSubjectRepository.delete({
+              course: courseToRemove.course,
+              university: existingUniversity,
+            });
+          }
+        }
+
+        if (cou.course) {
+          const existingCourse = await this.courseRepository.findOne(
+            cou.course,
+          );
+          const fetchUniCourse =
+            await this.universityCourseSubjectRepository.find({
+              where: { course: cou.course, university: existingUniversity },
+              relations: ['subject'],
+            });
+
+          if (!fetchUniCourse.length) {
+            throw new Error(`Course with ID ${cou.course} not found`);
+          }
+
+          const existingSubjects = fetchUniCourse.map(
+            (unicourse) => unicourse.subject,
+          );
+          const payloadSubjectIds = cou.subjects
+            .map((subject) => subject.id)
+            .filter(Boolean);
+
+          // Identify subjects to remove
+          const subjectsToRemove = existingSubjects.filter(
+            (subject) => !payloadSubjectIds.includes(subject.id),
+          );
+
+          // Remove subjects not present in payload
+          if (subjectsToRemove.length) {
+            await this.subjectRepository.remove(subjectsToRemove);
+          }
+
+          // Track processed subjects to avoid multiple updates
+          const processedSubjectIds = new Set<number>();
+
+          // Update existing subjects and add new ones
+          await Promise.all(
+            cou.subjects.map(async (subject: any) => {
+              if (!processedSubjectIds.has(subject.id)) {
+                const existingSubject = existingSubjects.find(
+                  (sub) => sub.id === subject.id,
+                );
+
+                if (existingSubject) {
+                  // Update existing subject
+                  Object.assign(existingSubject, subject);
+                  await this.subjectRepository.save(existingSubject);
+                } else {
+                  // Add new subject
+                  const newSubject = this.subjectRepository.create({
+                    subjectName: subject.subjectName,
+                    description: subject.description,
+                    course: existingCourse,
+                  });
+                  const savedSubject = await this.subjectRepository.save(
+                    newSubject,
+                  );
+
+                  // Link new subject to university and course
+                  await this.universityCourseSubjectRepository.save({
+                    university: existingUniversity,
+                    course: existingCourse,
+                    subject: savedSubject,
+                  });
+                }
+
+                // Mark the subject as processed
+                processedSubjectIds.add(subject.id);
+              }
+            }),
+          );
+        } else {
+          console.log(cou, '1');
+          // console.log(courses[0].course, '2');
+          // Adding a new course with finance details and subjects
+          const isCourseExist = await this.courseRepository.findOne({
+            where: { id: cou.courses },
+          });
+          console.log(isCourseExist, 'exist');
+          if (isCourseExist) {
+            await this.financeDetailsRepository.save({
+              ...cou,
+              university: existingUniversity,
+              course: isCourseExist,
+            });
+
+            // Track processed subjects to avoid multiple updates
+            const processedSubjectIds = new Set<number>();
+
+            await Promise.all(
+              cou.subjects.map(async (subject: any) => {
+                if (!processedSubjectIds.has(subject.id)) {
+                  const newSubject = this.subjectRepository.create({
+                    subjectName: subject.subjectName,
+                    description: subject.description,
+                    course: isCourseExist,
+                  });
+                  const savedSubject = await this.subjectRepository.save(
+                    newSubject,
+                  );
+
+                  // Link new subject to university and course
+                  await this.universityCourseSubjectRepository.save({
+                    university: existingUniversity,
+                    course: isCourseExist,
+                    subject: savedSubject,
+                  });
+
+                  // Mark the subject as processed
+                  processedSubjectIds.add(subject.id);
+                }
+              }),
+            );
+          }
+        }
       }),
     );
-
-    updatedUniversity.courses = updatedCourses;
-
-    await this.universityRepository.save(updatedUniversity);
-
-    return {
-      status: HttpStatus.OK,
-      message: 'University updated successfully',
-    };
-  } catch (error) {
-    console.log(error);
-    if (error instanceof HttpException) {
-      throw error;
-    } else {
-      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
-}
-
-
-
-
-
-
-
-
-
-
 
   async getUniversityByIdWithRelations(id: string): Promise<University> {
     const university = await this.universityRepository.findOne({
@@ -426,143 +439,26 @@ async updateUniversity({
     }
   }
 
-  // async updateUniversityCourses(
-  //   university: University,
-  //   courses: any[],
-  // ): Promise<void> {
-  //   console.log(university, 'university');
-  //   console.log(courses, 'courses');
-  //   const courseIdsInPayload = courses.map((courseItem) => courseItem);
+  async createAndSaveCampus(campus: any, existingUniversity: any) {
+    try {
+      const newUniversityCampus = this.universityCampusRepository.create({
+        ...campus,
+        university: existingUniversity,
+      });
 
-  //   const existingCourseIds = university.courses.map((course) => course.id);
-  //   console.log(existingCourseIds, 'exisintggg');
+      console.log(newUniversityCampus, 'new campuses');
 
-  //   // Determine courses to be added
-  //   const coursesToAdd = courses.filter(
-  //     (courseItem) => !existingCourseIds.includes(courseItem),
-  //   );
-  //   console.log(coursesToAdd, 'add');
+      const savedCampus = await this.universityCampusRepository.save(
+        newUniversityCampus,
+      );
+      console.log(savedCampus, 'Campus saved successfully');
 
-  //   // Determine courses to be removed
-  //   const coursesToRemove = university.courses.filter(
-  //     (course) => !courseIdsInPayload.includes(course.id),
-  //   );
-
-  //   try {
-  //     // Start a transaction
-
-  //     // Add courses to university
-  //     for (const courseItem of coursesToAdd) {
-  //       const course = await this.universityRepository.save(
-  //         courseItem.courseId,
-  //       );
-  //       university.courses.push(course);
-  //     }
-
-  //     // Remove courses from university
-  //     for (const course of coursesToRemove) {
-  //       await this.universityRepository
-  //         .createQueryBuilder()
-  //         .delete()
-  //         .from('course_universities_university')
-  //         .where('courseId = :courseId', { courseId: course })
-  //         .execute();
-  //     }
-
-  //     // Save the university
-  //     await this.universityRepository.save(university);
-  //   } catch (error) {
-  //     throw new Error('Failed to update university courses');
-  //   }
-  // }
-
- 
-
-  private async updateUniversityCampus(
-    university: University,
-    campuses: UniversityCampuses[],
-  ): Promise<void> {
-    // Fetch existing campus entities for the university
-    const existingCampusEntities = await this.universityCampusRepository.find({
-      where: { university },
-    });
-
-    // Create a map for existing campus entities by their ID
-    const existingCampusMap = new Map<string, UniversityCampuses>(
-      existingCampusEntities.map((campus) => [campus.id, campus]),
-    );
-
-    // Track campus IDs that are processed
-    const processedCampusIds = new Set<string>();
-
-    // Update or add campus details
-    for (const campus of campuses) {
-      if (existingCampusMap.has(campus.id)) {
-        // Update existing campus details
-        const existingCampusEntity = existingCampusMap.get(campus.id)!;
-        existingCampusEntity.location =
-          campus.location ?? existingCampusEntity.location;
-        existingCampusEntity.email = campus.email ?? existingCampusEntity.email;
-        existingCampusEntity.contact =
-          campus.contact ?? existingCampusEntity.contact;
-
-        console.log(existingCampusEntity, 'existing campus entity');
-
-        // Save the updated campus details
-        await this.universityCampusRepository.save(existingCampusEntity);
-
-        // Mark the campus ID as processed
-        processedCampusIds.add(campus.id);
-      } else {
-        // Add new campus details
-        const newCampusEntity = this.universityCampusRepository.create({
-          university,
-          location: campus.location,
-          email: campus.email,
-          contact: campus.contact,
-        });
-
-        console.log(newCampusEntity, 'new campus entity');
-
-        // Save the new campus details
-        await this.universityCampusRepository.save(newCampusEntity);
-      }
-    }
-
-    // Remove campus entities that are not present in the request
-    const unprocessedCampusIds = existingCampusEntities
-      .filter((campus) => !processedCampusIds.has(campus.id))
-      .map((campus) => campus.id);
-
-    if (unprocessedCampusIds.length > 0) {
-      await this.universityCampusRepository.delete(unprocessedCampusIds);
+      return savedCampus;
+    } catch (error) {
+      console.error('Error saving campus:', error);
+      throw new Error('Failed to save the campus');
     }
   }
-
-  // private async updateUniversityCourses(
-  //   university: University,
-  //   course: string
-  // ): Promise<void> {
-  //   try {
-  //     // Fetch course by ID
-  //     const course = await this.courseRepository.findOne({where: { id: course.value}});
-  //     console.log(course, "courses")
-
-  //     // If course not found, throw an error
-  //     if (!course) {
-  //       throw new Error(`Course with the provided ID not found`);
-  //     }
-
-  //     // Update the courses of the university
-  //     university.courses = [course];
-
-  //     // Save the updated university
-  //     await this.universityRepository.save(university);
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
-  //   }
-  // }
 
   async fetchUniversity(): Promise<University[]> {
     return this.universityRepository.find();
@@ -572,51 +468,77 @@ async updateUniversity({
     return this.universityRepository.find({ where: { isActive: true } });
   }
 
- async fetchUniversityBySlug({ slug }: any): Promise<University | null> {
-  try {
-    const university = await this.universityRepository
-      .createQueryBuilder('university')
-      .leftJoinAndSelect('university.campuses', 'campuses')
-      .leftJoinAndSelect('university.courseSubject', 'courseSubject') // Fetch university's subjects
-      .leftJoinAndSelect('courseSubject.subject', 'subject') // Fetch subject details
-      .leftJoinAndSelect('university.courses', 'course')
-      .leftJoinAndSelect('course.universityCourseSubject', 'courseCourseSubject') // Fetch course-related subjects
-      .leftJoinAndSelect('courseCourseSubject.subject', 'courseSubjectDetail') // Fetch subject details for each course
-      .leftJoinAndSelect('course.financeDetails', 'financeDetails')
-      .leftJoinAndSelect('course.studyLevel', 'studyLevel')
-      .where('university.slug = :slug', { slug })
-      .getOne();
+  async fetchUniversityBySlug({ slug }: any): Promise<University | null> {
+    try {
+      const university = await this.universityRepository
+        .createQueryBuilder('university')
+        .leftJoinAndSelect('university.campuses', 'campuses')
+        .leftJoinAndSelect('university.courseSubject', 'courseSubject') // Fetch university's subjects
+        .leftJoinAndSelect('courseSubject.subject', 'subject') // Fetch subject details
+        .leftJoinAndSelect('university.courses', 'course')
+        .leftJoinAndSelect(
+          'course.universityCourseSubject',
+          'courseCourseSubject',
+        ) // Fetch course-related subjects
+        .leftJoinAndSelect('courseCourseSubject.subject', 'courseSubjectDetail') // Fetch subject details for each course
+        .leftJoinAndSelect('course.financeDetails', 'financeDetails')
+        .leftJoinAndSelect('course.studyLevel', 'studyLevel')
+        .where('university.slug = :slug', { slug })
+        .getOne();
 
-    return university;
-  } catch (error) {
-    console.error('Error fetching university by slug:', error);
-    return null;
+      return university;
+    } catch (error) {
+      console.error('Error fetching university by slug:', error);
+      return null;
+    }
   }
-}
 
+async  fetchUniversityById({ id }): Promise<any | undefined> {
+  const university = await this.universityRepository
+    .createQueryBuilder('university')
+    .leftJoinAndSelect('university.destination', 'destination')
+    .leftJoinAndSelect('university.campuses', 'campuses')
+    .leftJoinAndSelect('university.courseSubject', 'universityCourseSubject')
+    .leftJoinAndSelect('universityCourseSubject.course', 'course')
+    .leftJoinAndSelect('course.financeDetails', 'financeDetails')
+    .leftJoinAndSelect('universityCourseSubject.subject', 'subject')
+    .where('university.id = :id', { id })
+    .getOne();
 
-  async fetchUniversityById({ id }): Promise<any | undefined> {
-    const university = await this.universityRepository
-      .createQueryBuilder('university')
-      .leftJoinAndSelect('university.destination', 'destination')
-      .leftJoinAndSelect('university.campuses', 'campuses')
-      .leftJoinAndSelect('university.courses', 'courses')
-      .leftJoinAndSelect('courses.financeDetails', 'financeDetails')
-      .leftJoinAndSelect('courses.studyLevel', 'studyLevel')
-      .leftJoinAndSelect(
-        'courses.universityCourseSubject',
-        'universityCourseSubject',
-      )
-      .leftJoinAndSelect('universityCourseSubject.subject', 'subject')
-      .where('university.id = :id', { id })
-      .getOne();
+  if (!university) {
+    throw new Error(`University with ID ${id} not found`);
+  }
 
-    if (!university) {
-      throw new Error(`University with ID ${id} not found`);
+  // Ensure university.courseSubject is an array
+  const courseSubjects = Array.isArray(university.courseSubject) ? university.courseSubject : [];
+
+  // Create a map to associate subjects with their corresponding courses
+  const coursesMap = courseSubjects.reduce((acc, courseSubject) => {
+    const courseId = courseSubject.course.id;
+
+    // Initialize the course in the map if it doesn't exist
+    if (!acc[courseId]) {
+      acc[courseId] = {
+        ...courseSubject.course,
+        subjects: [],
+      };
     }
 
-    return { university };
-  }
+    // Add the subject to the course
+    acc[courseId].subjects.push(courseSubject.subject);
+
+    return acc;
+  }, {} as Record<string, { id: string; courseName: string; subjects: any[] }>);
+
+
+  const coursesWithSubjects = Object.values(coursesMap);
+
+  return {
+    ...university,
+    courseSubject: coursesWithSubjects,
+  };
+}
+
 
   async searchUniversity({
     course,
@@ -625,7 +547,7 @@ async updateUniversity({
     rankingOrder,
     feesOrder,
     scholarship,
-    courseCategory
+    courseCategory,
   }): Promise<University[]> {
     try {
       let query = this.universityRepository
@@ -676,11 +598,11 @@ async updateUniversity({
         query.orderBy('university.worldRanking', rankingOrder);
       }
 
-       if (courseCategory) {
-      query.andWhere('courseCategory.id = :courseCategoryId', {
-        courseCategoryId: courseCategory,
-      });
-    }
+      if (courseCategory) {
+        query.andWhere('courseCategory.id = :courseCategoryId', {
+          courseCategoryId: courseCategory,
+        });
+      }
 
       const universities = await query.getMany();
 
@@ -772,153 +694,20 @@ async updateUniversity({
     }
   }
 
-  private async updateUniversityCourses(
-    university: University,
-    courses: any[],
-  ): Promise<void> {
-    const existingCourseIds = university.courses.map((course) => course.id);
-    const courseIdsInPayload = courses.map((courseItem) => courseItem.courses);
-
-    // Determine courses to be added
-    const coursesToAdd = courses.filter(
-      (courseItem) => !existingCourseIds.includes(courseItem.courses),
-    );
-
-    // Determine courses to be removed
-    const coursesToRemove = university.courses.filter(
-      (course) => !courseIdsInPayload.includes(course.id),
-    );
-
-    // Remove financial details associated with the courses to be removed
-    await Promise.all(
-      coursesToRemove.map(async (course) => {
-        await this.financeDetailsRepository.delete({ course, university });
-      }),
-    );
-
-    // Remove courses with specified IDs from the university
-    university.courses = university.courses.filter(
-      (course) => !coursesToRemove.some((c) => c.id === course.id),
-    );
-
-    // Add or update courses and finance details
-    const fetchedCourses = await Promise.all(
-      courses.map(async (courseItem) => {
-        const courseId = courseItem.courses;
-        const fetchedCourse = await this.courseRepository.findOne({
-          where: { id: courseId },
-        });
-        if (!fetchedCourse) {
-          throw new Error(`Course with ID ${courseId} not found`);
-        }
-
-        // Update or create finance details
-        const financeDetails = this.financeDetailsRepository.create({
-          ...courseItem,
-          university,
-          course: fetchedCourse,
-        });
-        await this.financeDetailsRepository.save(financeDetails);
-
-        // Add subjects to the course, checking if they already exist
-        const savedSubjects = await Promise.all(
-          (courseItem.subjects || []).map(async (subject: any) => {
-            // Check if subject already exists
-            let savedSubject = await this.subjectRepository.findOne({
-              where: {
-                subjectName: subject.subjectName,
-                description: subject.description,
-                course: fetchedCourse,
-              },
-            });
-
-            if (!savedSubject) {
-              const subjectEntity = this.subjectRepository.create({
-                subjectName: subject.subjectName,
-                description: subject.description,
-                course: fetchedCourse,
-              });
-              savedSubject = await this.subjectRepository.save(subjectEntity);
-            }
-
-            // Check if the university-course-subject relationship already exists
-            let universityCourseSubject =
-              await this.universityCourseSubjectRepository.findOne({
-                where: {
-                  university,
-                  course: fetchedCourse,
-                  subject: savedSubject,
-                },
-              });
-
-            if (!universityCourseSubject) {
-              universityCourseSubject =
-                this.universityCourseSubjectRepository.create({
-                  university,
-                  course: fetchedCourse,
-                  subject: savedSubject,
-                });
-              await this.universityCourseSubjectRepository.save(
-                universityCourseSubject,
-              );
-            }
-
-            return savedSubject;
-          }),
-        );
-
-        // Remove subjects that are not in the payload
-        const existingSubjects = await this.subjectRepository.find({
-          where: { course: fetchedCourse },
-        });
-
-        const subjectsToRemove = existingSubjects.filter(
-          (existingSubject) =>
-            !courseItem.subjects.some(
-              (subject: any) =>
-                subject.subjectName === existingSubject.subjectName &&
-                subject.description === existingSubject.description,
-            ),
-        );
-
-        await Promise.all(
-          subjectsToRemove.map(async (subjectToRemove) => {
-            // Remove the relationship first
-            await this.universityCourseSubjectRepository.delete({
-              university,
-              course: fetchedCourse,
-              subject: subjectToRemove,
-            });
-            // Then remove the subject
-            await this.subjectRepository.delete(subjectToRemove.id);
-          }),
-        );
-
-        // Return fetched course to add to university's course list
-        return fetchedCourse;
-      }),
-    );
-
-    // Update university's courses with fetched courses
-    university.courses.push(...fetchedCourses);
-  }
-
-   async fetchSubjectsByUniversity(id: string): Promise<any> {
-    console.log(id)
+  async fetchSubjectsByUniversity(id: string): Promise<any> {
+    console.log(id);
     try {
       const university = await this.universityRepository.findOne({
         where: { id },
         relations: ['courseSubject'],
       });
-      console.log(university, "university")
+      console.log(university, 'university');
 
       if (!university) {
         throw new HttpException('University not found', HttpStatus.NOT_FOUND);
       }
 
-     
-
-      return  university ;
+      return university;
     } catch (error) {
       console.error('Error fetching subjects by university:', error);
       throw new HttpException(
@@ -927,5 +716,119 @@ async updateUniversity({
       );
     }
   }
-}
 
+  //  async updateCourses(courses: any[], existingUniversity: University) {
+  //   await Promise.all(
+  //     courses.map(async (courseItem: any) => {
+  //       const course = await this.getOrCreateCourse(courseItem);
+
+  //       await this.updateOrCreateFinanceDetails(course, courseItem, existingUniversity);
+
+  //       const updatedSubjects = await Promise.all(
+  //         courseItem.subjects.map(async (subjectItem: any) => {
+  //           const subject = await this.updateOrCreateSubject(subjectItem);
+  //           await this.ensureUniversityCourseSubject(existingUniversity, course, subject);
+  //           return subject;
+  //         })
+  //       );
+
+  //       // Assign subjects to course if needed
+  //       // course.subjects = updatedSubjects;
+
+  //       return this.courseRepository.save(course);
+  //     })
+  //   );
+  // }
+
+  // async getOrCreateCourse(courseItem: any, universityId: number) {
+  //   const university = await this.universityRepository.findOne({
+  //     where: { id: universityId.toString() },
+  //     relations: ['courses'], // Ensure 'courses' is a valid relation in the University entity
+  //   });
+
+  //   if (!university) {
+  //     throw new Error(`University with ID ${universityId} not found`);
+  //   }
+
+  //   let course = university.courses.find(c => c.id === courseItem.courseId);
+
+  //   if (!course) {
+  //     course = this.courseRepository.create({
+  //       courseName: courseItem.courseName,
+  //       university: university, // Associate the course with the university
+  //     });
+  //     course = await this.courseRepository.save(course);
+  //   }
+
+  //   return course;
+  // }
+
+  async updateOrCreateFinanceDetails(
+    course: any,
+    courseItem: any,
+    existingUniversity: any,
+  ) {
+    let financeDetails = await this.financeDetailsRepository.findOne({
+      where: { university: existingUniversity, course: course },
+    });
+
+    if (financeDetails) {
+      Object.assign(financeDetails, {
+        tuitionFee: courseItem.tuitionFee,
+        currency: courseItem.currency,
+        financialAidAvailable: courseItem.financialAidAvailable,
+        scholarshipDetails: courseItem.scholarshipDetails,
+      });
+    } else {
+      financeDetails = this.financeDetailsRepository.create({
+        tuitionFee: courseItem.tuitionFee,
+        currency: courseItem.currency,
+        financialAidAvailable: courseItem.financialAidAvailable,
+        scholarshipDetails: courseItem.scholarshipDetails,
+        university: existingUniversity,
+        course: course,
+      });
+    }
+
+    return this.financeDetailsRepository.save(financeDetails);
+  }
+
+  async updateOrCreateSubject(subjectItem: any) {
+    let subject = await this.subjectRepository.findOne({
+      where: { subjectName: subjectItem.subjectName },
+    });
+
+    if (!subject) {
+      subject = this.subjectRepository.create({
+        subjectName: subjectItem.subjectName,
+        description: subjectItem.description,
+      });
+    } else {
+      Object.assign(subject, subjectItem);
+    }
+
+    return this.subjectRepository.save(subject);
+  }
+
+  async ensureUniversityCourseSubject(
+    university: University,
+    course: any,
+    subject: any,
+  ) {
+    let universityCourseSubject =
+      await this.universityCourseSubjectRepository.findOne({
+        where: { university: university, course: course, subject: subject },
+      });
+
+    if (!universityCourseSubject) {
+      universityCourseSubject = this.universityCourseSubjectRepository.create({
+        university: university,
+        course: course,
+        subject: subject,
+      });
+      await this.universityCourseSubjectRepository.save(
+        universityCourseSubject,
+      );
+    }
+  }
+}

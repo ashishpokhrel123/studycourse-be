@@ -58,7 +58,6 @@ export class UniversityService {
     }
   }
   async updateUniversity(university: UpdateUniversityDto): Promise<any> {
-    console.log(university, 'in service');
     try {
       const {
         id,
@@ -66,7 +65,6 @@ export class UniversityService {
         description,
         universityImage,
         worldRanking,
-        // countryRanking,
         destination,
         courses,
         campuses,
@@ -79,7 +77,6 @@ export class UniversityService {
           description,
           universityImage,
           worldRanking,
-          // countryRanking,
           destination,
           courses,
           campuses,

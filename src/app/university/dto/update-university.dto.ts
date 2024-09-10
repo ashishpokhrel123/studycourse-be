@@ -1,9 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
+// DTO for Finance Details
 export class FinanceDetailsDto {
   @ApiProperty({ description: 'The tuition fee of the university' })
-
   @IsNumber()
   tuitionFee: number;
 
@@ -23,6 +31,7 @@ export class FinanceDetailsDto {
   scholarshipDetails?: string;
 }
 
+// DTO for Campus Details
 export class CampusesDto {
   @ApiProperty({ description: 'The campus location of the university' })
   @IsNotEmpty()
@@ -40,59 +49,79 @@ export class CampusesDto {
   contact: string;
 }
 
+// DTO for Subject Details
+export class SubjectDto {
+  @ApiProperty({ description: 'The subject of the course' })
+  @IsNotEmpty()
+  @IsString()
+  subjectName: string;
+
+  @ApiProperty({ description: 'The description of the subject (optional)' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+
+// DTO for Course Details
+export class CourseDetailsDto {
+  @ApiProperty({ description: 'The ID of the course' })
+  @IsNotEmpty()
+  @IsString()
+  courseId: string;
+
+  @ApiProperty({ description: 'Subjects of the course' })
+  @IsNotEmpty()
+  subjects: SubjectDto[];
+
+  @ApiProperty({ description: 'Finance details related to the course' })
+  @IsNotEmpty()
+  financeDetails: FinanceDetailsDto[];
+}
+
+// DTO for Updating a University
 export class UpdateUniversityDto {
-
-
-  @ApiProperty({ description: 'The id of the university' })
-
+  @ApiProperty({ description: 'The ID of the university' })
+  @IsNotEmpty()
+  @IsUUID()
   id: string;
 
+  @ApiProperty({ description: 'The name of the university (optional)' })
+  @IsOptional()
+  @IsString()
+  universityName?: string;
 
-  @ApiProperty({ description: 'The name of the university' })
+   @ApiProperty({ description: 'The name of the university (optional)' })
+  @IsOptional()
+  @IsString()
+  slug?: string;
 
-  universityName: string;
+  @ApiProperty({ description: 'The description of the university (optional)' })
+  @IsOptional()
+  @IsString()
+  description?: string;
 
-  // @ApiProperty({ description: 'The address of the university' })
-
-  // universityAddress: string;
-
-  // @ApiProperty({ description: 'The contact number of the university' })
-
-  // universityContactNumber: string;
-
-   @ApiProperty({ description: 'The description of the university' })
-
-  description: string;
-
-  // @ApiProperty({ description: 'The email of the university' })
-
-  // universityEmail: string;
-
-  @ApiProperty({ description: 'The world ranking of the university' })
-
-  worldRanking: number;
-
-  // @ApiProperty({ description: 'The country ranking of the university' })
-
-  // countryRanking: number;
+  @ApiProperty({ description: 'The world ranking of the university (optional)' })
+  @IsOptional()
+  @IsNumber()
+  worldRanking?: number;
 
   @ApiProperty({ description: 'The image URL of the university (optional)' })
   @IsOptional()
+  @IsString()
   universityImage?: string;
 
-  @ApiProperty({ description: 'The destination ID of the university' })
-
-  destination: string;
-
-  @ApiProperty({ description: 'The course ID of the university' })
-
-  courses: string[];
-
-  @ApiProperty({ description: 'FinanceDetails of the university' })
-
-  financeDetails: FinanceDetailsDto;
-
-  @ApiProperty({ description: 'Campuses of the university' })
+  @ApiProperty({ description: 'The destination ID of the university (optional)' })
   @IsOptional()
-  campuses: CampusesDto[];
+  @IsString()
+  destination?: string;
+
+  @ApiProperty({ description: 'Courses offered by the university (optional)' })
+  @IsOptional()
+  @IsArray()
+  courses?: CourseDetailsDto[];
+
+  @ApiProperty({ description: 'Campuses of the university (optional)' })
+  @IsOptional()
+  @IsArray()
+  campuses?: CampusesDto[];
 }

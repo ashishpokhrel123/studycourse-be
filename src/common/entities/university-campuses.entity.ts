@@ -22,8 +22,9 @@ export class UniversityCampuses {
   @Column({ nullable: true })
   contact: string;
 
-  @ManyToOne(() => University, university => university.campuses)
-  university: University;
+  @ManyToOne(() => University, university => university.campuses, { cascade: true })
+university: University;
+
 
   @Column({ nullable: true, type: 'timestamptz' })
   createdAt: Date;
