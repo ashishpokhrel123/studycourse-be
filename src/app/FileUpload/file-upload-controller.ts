@@ -57,10 +57,19 @@ export class StorageController {
     }
   }
 
-  @Get('image/:imagename')
-    findImage(@Param('imagename') imagename, @Res() res): Observable<Object> {
-        return of(res.sendFile(path.join(process.cwd(), './uploads/' + imagename)));
+@Get('image/:imagename')
+findImage(@Param('imagename') imagename: string, @Res() res: Response): void {
+  const imagePath = path.join(process.cwd(), 'uploads', imagename);
+
+  console.log(imagePath,"path")
+  
+  res.sendFile(imagePath, (err) => {
+    if (err) {
+      res.status(HttpStatus.NOT_FOUND).json({ message: 'File not found' });
     }
+  });
+}
+
 
   private handleFileError(error: any, res: Response): void {
     if (error instanceof NotFoundException) {

@@ -200,9 +200,14 @@ export class UniversityRepository {
     // Update university entity
     existingUniversity.universityName = universityName;
     existingUniversity.description = description;
-    existingUniversity.universityImage = universityImage;
+    if (universityImage && universityImage.trim() !== '') {
+      existingUniversity.universityImage = universityImage;
+    }
     existingUniversity.worldRanking = worldRanking;
     existingUniversity.destination = fetchDestination;
+
+    await this.universityRepository.save(existingUniversity);
+    
 
     // Update campuses
     const existingCampuses = await this.universityCampusRepository.find({
@@ -493,52 +498,52 @@ export class UniversityRepository {
     }
   }
 
-async  fetchUniversityById({ id }): Promise<any | undefined> {
-  const university = await this.universityRepository
-    .createQueryBuilder('university')
-    .leftJoinAndSelect('university.destination', 'destination')
-    .leftJoinAndSelect('university.campuses', 'campuses')
-    .leftJoinAndSelect('university.courseSubject', 'universityCourseSubject')
-    .leftJoinAndSelect('universityCourseSubject.course', 'course')
-    .leftJoinAndSelect('course.financeDetails', 'financeDetails')
-    .leftJoinAndSelect('universityCourseSubject.subject', 'subject')
-    .where('university.id = :id', { id })
-    .getOne();
+  async fetchUniversityById({ id }): Promise<any | undefined> {
+    const university = await this.universityRepository
+      .createQueryBuilder('university')
+      .leftJoinAndSelect('university.destination', 'destination')
+      .leftJoinAndSelect('university.campuses', 'campuses')
+      .leftJoinAndSelect('university.courseSubject', 'universityCourseSubject')
+      .leftJoinAndSelect('universityCourseSubject.course', 'course')
+      .leftJoinAndSelect('course.financeDetails', 'financeDetails')
+      .leftJoinAndSelect('universityCourseSubject.subject', 'subject')
+      .where('university.id = :id', { id })
+      .getOne();
 
-  if (!university) {
-    throw new Error(`University with ID ${id} not found`);
-  }
-
-  // Ensure university.courseSubject is an array
-  const courseSubjects = Array.isArray(university.courseSubject) ? university.courseSubject : [];
-
-  // Create a map to associate subjects with their corresponding courses
-  const coursesMap = courseSubjects.reduce((acc, courseSubject) => {
-    const courseId = courseSubject.course.id;
-
-    // Initialize the course in the map if it doesn't exist
-    if (!acc[courseId]) {
-      acc[courseId] = {
-        ...courseSubject.course,
-        subjects: [],
-      };
+    if (!university) {
+      throw new Error(`University with ID ${id} not found`);
     }
 
-    // Add the subject to the course
-    acc[courseId].subjects.push(courseSubject.subject);
+    // Ensure university.courseSubject is an array
+    const courseSubjects = Array.isArray(university.courseSubject)
+      ? university.courseSubject
+      : [];
 
-    return acc;
-  }, {} as Record<string, { id: string; courseName: string; subjects: any[] }>);
+    // Create a map to associate subjects with their corresponding courses
+    const coursesMap = courseSubjects.reduce((acc, courseSubject) => {
+      const courseId = courseSubject.course.id;
 
+      // Initialize the course in the map if it doesn't exist
+      if (!acc[courseId]) {
+        acc[courseId] = {
+          ...courseSubject.course,
+          subjects: [],
+        };
+      }
 
-  const coursesWithSubjects = Object.values(coursesMap);
+      // Add the subject to the course
+      acc[courseId].subjects.push(courseSubject.subject);
 
-  return {
-    ...university,
-    courseSubject: coursesWithSubjects,
-  };
-}
+      return acc;
+    }, {} as Record<string, { id: string; courseName: string; subjects: any[] }>);
 
+    const coursesWithSubjects = Object.values(coursesMap);
+
+    return {
+      ...university,
+      courseSubject: coursesWithSubjects,
+    };
+  }
 
   async searchUniversity({
     course,
