@@ -12,6 +12,7 @@ export enum UserRole {
   SUPERADMIN = 'superadmin',
   ADMIN = 'admin',
   STUDENT = 'student',
+  MANAGER = 'manager'
 }
 @Entity()
 export class ScUser {
@@ -50,7 +51,7 @@ export class ScUser {
   @Column({ nullable: true })
   startDate: Date;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.STUDENT })
+  @Column({ type: 'enum', enum: UserRole, nullable:true})
   role: UserRole;
 
   @Column({

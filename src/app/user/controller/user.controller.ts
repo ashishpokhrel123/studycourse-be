@@ -67,9 +67,8 @@ export class UserController {
   })
   @ApiBody({ type: RegisterUserDTO })
   async registerUser(@Body() registerUserDTO: RegisterUserDTO) {
-   
     try {
-      console.log(registerUserDTO, "user dto")
+      console.log(registerUserDTO, 'user dto');
       const user = await this.userService.registerUser(registerUserDTO);
       return user;
     } catch (error) {
@@ -87,9 +86,7 @@ export class UserController {
     description: 'Students fetch succesfully',
     type: CreateSuccessResponse,
   })
- 
   async fetchStudent(): Promise<any> {
-   
     try {
       const user = await this.userService.fetchUser();
       return CreateSuccessResponse(user.message, user.data);
@@ -98,7 +95,7 @@ export class UserController {
     }
   }
 
-   // api for register and appoinment
+  // api for register and appoinment
   @Post('addUser')
   @ApiOperation({
     summary: 'User created succesfully',
@@ -108,9 +105,7 @@ export class UserController {
     description: 'Students fetch succesfully',
     type: CreateSuccessResponse,
   })
- 
   async addUser(@Body() registerUserDTO: any): Promise<any> {
-   
     try {
       const user = await this.userService.addUser(registerUserDTO);
       return user;
@@ -119,7 +114,7 @@ export class UserController {
     }
   }
 
-   // api for register and appoinment
+  // api for register and appoinment
   @Post('addNewUser')
   @ApiOperation({
     summary: 'User created succesfully',
@@ -129,9 +124,7 @@ export class UserController {
     description: 'Students fetch succesfully',
     type: CreateSuccessResponse,
   })
- 
   async addNewUser(@Body() registerUserDTO: any): Promise<any> {
-   
     try {
       const user = await this.userService.addNewUser(registerUserDTO);
       return user;
@@ -150,9 +143,7 @@ export class UserController {
     description: 'Students fetch succesfully',
     type: CreateSuccessResponse,
   })
- 
   async fetchAllUser(): Promise<any> {
-   
     try {
       const user = await this.userService.fetchAllUser();
       return user;
@@ -161,5 +152,68 @@ export class UserController {
     }
   }
 
-  
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Fetch user by ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User fetched successfully',
+    type: CreateSuccessResponse,
+  })
+  async fetchUserById(@Param('id') id: string): Promise<any> {
+    try {
+      const user = await this.userService.fetchUserById(id);
+      return CreateSuccessResponse('User fetched successfully', user);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // Update user role
+
+  @Patch('updateRole/:id')
+  @ApiOperation({
+    summary: 'Update user role',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User role updated successfully',
+    type: CreateSuccessResponse,
+  })
+  async updateUserRole(
+    @Param('id') id: string,
+    @Body('role') role: string,
+  ): Promise<any> {
+    try {
+      const updatedUser = await this.userService.updateUserRole(id, role);
+      return CreateSuccessResponse(
+        'User role updated successfully',
+        updatedUser,
+      );
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // Update user data
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Update user data',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User updated successfully',
+    type: CreateSuccessResponse,
+  })
+  async updateUser(@Param('id') id: string, @Body() data: any): Promise<any> {
+    try {
+      const updatedUser = await this.userService.updateUser(id, data);
+      return CreateSuccessResponse('User updated successfully', updatedUser);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

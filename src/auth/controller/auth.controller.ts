@@ -18,6 +18,7 @@ import {
 } from 'src/common/response/response';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDTO, RegisterDTO } from '../dto/auth.dto';
+import { Response } from 'express';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -53,22 +54,30 @@ export class AuthController {
     type: CreateLoginSuccessResponse,
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request' })
-  async login(@Body() loginDto: LoginDTO):Promise<any> {
-    const { email, password } = loginDto;
- 
-    console.log(await this.authService.login(email, password), "test")
+ async login(@Body() loginDto: LoginDTO, @Res({ passthrough: true }) res: Response): Promise<any> {
+  const { email, password } = loginDto;
 
-    const { access_token, refresh_token } = await this.authService.login(
-      email,
-      password,
-    );
-    // res.cookie('token', 'Bearer ' + refresh_token, {
-    //   httpOnly: true,
-    //   secure: true,
-    // });
+  // Log in and get access and refresh tokens
+  const loginResponse = await this.authService.login(email, password);
+  const { access_token, refresh_token } = loginResponse;
 
-    return CreateLoginSuccessResponse('Login successfully', access_token);
-  }
+  // Set the access token in the cookie
+  res.cookie('token', access_token, {
+    httpOnly: true, // Prevent client-side access
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    sameSite: 'strict', // Prevent CSRF
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+
+  // Log for debugging
+  console.log('Login successful:', loginResponse);
+
+  // Return success response
+  return {
+    message: 'Login successfully',
+    access_token,
+  };
+}
 
   @Post('/google/login')
   @UseGuards(GoogleOauthGuard)

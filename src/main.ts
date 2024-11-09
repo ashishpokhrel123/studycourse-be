@@ -8,6 +8,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.use(cookieParser());
 
 
   const port = process.env.PORT || 3001;
@@ -36,7 +37,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
-  app.use(cookieParser());
+
 
   await app.listen(port);
 

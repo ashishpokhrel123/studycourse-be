@@ -120,7 +120,7 @@ export class UniversityService {
     }
   }
 
-   async getUniversityPublic(): Promise<University[]> {
+  async getUniversityPublic(): Promise<University[]> {
     try {
       const course = await this.universityRepository.fetchUniversityPublic();
       return course;
@@ -145,8 +145,15 @@ export class UniversityService {
 
   async searchUniversity(searchCriteria: SearchCriteriaDTO): Promise<any> {
     try {
-      const { course, level, location, rankingOrder, feesOrder, scholarship, courseCategory  } =
-        searchCriteria;
+      const {
+        course,
+        level,
+        location,
+        rankingOrder,
+        feesOrder,
+        scholarship,
+        courseCategory,
+      } = searchCriteria;
       return await this.universityRepository.searchUniversity({
         course,
         level,
@@ -154,7 +161,7 @@ export class UniversityService {
         rankingOrder,
         feesOrder,
         scholarship,
-        courseCategory
+        courseCategory,
       });
     } catch (error) {
       console.error('Error searching universities:', error);
@@ -215,8 +222,8 @@ export class UniversityService {
     }
   }
 
-   async fetchSubjectsByUniversity(id: string): Promise<any> {
-    console.log(id, "iddd")
+  async fetchSubjectsByUniversity(id: string): Promise<any> {
+    console.log(id, 'iddd');
     try {
       if (isEmpty(id))
         throw new HttpException(
@@ -227,6 +234,57 @@ export class UniversityService {
     } catch (error) {
       throw new HttpException(
         'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async fetchSubjectsByUniversityAndCourseSlug(
+    universitySlug: string,
+    courseSlug: string,
+  ): Promise<any> {
+    try {
+      // Validate that both slugs are provided
+      if (isEmpty(universitySlug) || isEmpty(courseSlug)) {
+        throw new HttpException(
+          'Both universitySlug and courseSlug parameters are required.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Fetch subjects based on university and course slugs
+      return await this.universityRepository.fetchSubjectsByUniversityAndCourseSlug(
+        universitySlug,
+        courseSlug,
+      );
+    } catch (error) {
+      // Handle specific known errors if necessary (e.g., QueryFailedError)
+      console.error(
+        `Error fetching subjects for university: ${universitySlug} and course: ${courseSlug}`,
+        error,
+      );
+
+      throw new HttpException(
+        'Internal Server Error. Failed to fetch subjects for the university and course.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteUniversity(id: string): Promise<any> {
+    try {
+      if (isEmpty(id)) {
+        throw new HttpException(
+          'Id parameter is required.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const result = await this.universityRepository.deleteUniversity(id);
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        `Unable to delete university with id ${id}. ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -14,6 +14,7 @@ import { UniversityCampuses } from 'src/common/entities/university-campuses.enti
 import { Course } from 'src/common/entities/course.entity';
 import { Subject } from 'src/common/entities/subject.entity';
 import { UniversityCourseSubject } from 'src/common/entities/university-course-subject.entity';
+import slugify from 'slugify';
 
 @Injectable()
 export class UniversityRepository {
@@ -57,11 +58,18 @@ export class UniversityRepository {
     }
 
     // Fetch the destination
-    const fetchDestination = await this.studyDestinationRepository.findOne({
-      where: { id: destination },
+    let fetchDestination = await this.studyDestinationRepository.findOne({
+      where: { name: destination },
     });
     if (!fetchDestination) {
-      throw new Error('Destination not found');
+      // If the destination is not found, create a new one
+      fetchDestination = this.studyDestinationRepository.create({
+        name: destination,
+        slug: slugify(destination),
+      });
+      fetchDestination = await this.studyDestinationRepository.save(
+        fetchDestination,
+      );
     }
 
     // Create the University entity
@@ -190,11 +198,18 @@ export class UniversityRepository {
     }
 
     // Fetch the destination
-    const fetchDestination = await this.studyDestinationRepository.findOne({
-      where: { id: destination },
+    let fetchDestination = await this.studyDestinationRepository.findOne({
+      where: { name: destination },
     });
     if (!fetchDestination) {
-      throw new HttpException('Destination not found', HttpStatus.NOT_FOUND);
+      // If the destination is not found, create a new one
+      fetchDestination = this.studyDestinationRepository.create({
+        name: destination,
+        slug: slugify(destination),
+      });
+      fetchDestination = await this.studyDestinationRepository.save(
+        fetchDestination,
+      );
     }
 
     // Update university entity
@@ -207,7 +222,6 @@ export class UniversityRepository {
     existingUniversity.destination = fetchDestination;
 
     await this.universityRepository.save(existingUniversity);
-    
 
     // Update campuses
     const existingCampuses = await this.universityCampusRepository.find({
@@ -478,14 +492,9 @@ export class UniversityRepository {
       const university = await this.universityRepository
         .createQueryBuilder('university')
         .leftJoinAndSelect('university.campuses', 'campuses')
-        .leftJoinAndSelect('university.courseSubject', 'courseSubject') // Fetch university's subjects
-        .leftJoinAndSelect('courseSubject.subject', 'subject') // Fetch subject details
-        .leftJoinAndSelect('university.courses', 'course')
-        .leftJoinAndSelect(
-          'course.universityCourseSubject',
-          'courseCourseSubject',
-        ) // Fetch course-related subjects
-        .leftJoinAndSelect('courseCourseSubject.subject', 'courseSubjectDetail') // Fetch subject details for each course
+        .leftJoinAndSelect('university.courseSubject', 'courseSubject')
+        .leftJoinAndSelect('courseSubject.course', 'course')
+        .leftJoinAndSelect('courseSubject.subject', 'subject')
         .leftJoinAndSelect('course.financeDetails', 'financeDetails')
         .leftJoinAndSelect('course.studyLevel', 'studyLevel')
         .where('university.slug = :slug', { slug })
@@ -554,6 +563,7 @@ export class UniversityRepository {
     scholarship,
     courseCategory,
   }): Promise<University[]> {
+
     try {
       let query = this.universityRepository
         .createQueryBuilder('university')
@@ -564,7 +574,11 @@ export class UniversityRepository {
         .leftJoinAndSelect('university.financeDetails', 'financeDetails');
 
       if (course) {
-        query.andWhere('course.id = :courseId', { courseId: course });
+
+        console.log(course,"coursecatrid")
+        query.andWhere('courseCategory.id = :courseCategoryId', {
+          courseCategoryId: course,
+        });
       }
 
       if (level) {
@@ -833,6 +847,65 @@ export class UniversityRepository {
       });
       await this.universityCourseSubjectRepository.save(
         universityCourseSubject,
+      );
+    }
+  }
+
+  async fetchSubjectsByUniversityAndCourseSlug(
+    universitySlug: string,
+    courseSlug: string,
+  ): Promise<any> {
+    try {
+      const university = await this.universityRepository
+        .createQueryBuilder('university')
+        .leftJoinAndSelect('university.courseSubject', 'courseSubject')
+        .leftJoinAndSelect('courseSubject.course', 'course')
+        .leftJoinAndSelect('courseSubject.subject', 'subject')
+        .leftJoinAndSelect('course.financeDetails', 'financeDetails')
+        .leftJoinAndSelect('course.studyLevel', 'studyLevel')
+        // Add conditions to filter by both university slug and course slug
+        .where('university.slug = :universitySlug', { universitySlug })
+        .andWhere('course.slug = :courseSlug', { courseSlug })
+        .getMany();
+
+      console.log(university,"university")
+
+      if (!university) {
+        throw new HttpException(
+          'University or course not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return university;
+    } catch (error) {
+      console.error('Error fetching subjects by university and course:', error);
+      throw new HttpException(
+        'Failed to fetch subjects for the university and course. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteUniversity(id: string): Promise<HttpException> {
+    try {
+      const result = await this.universityRepository.delete(id);
+
+      if (result.affected === 0) {
+        throw new HttpException(`University  not found.`, HttpStatus.NOT_FOUND);
+      }
+
+      throw new HttpException(`University  has been deleted.`, HttpStatus.OK);
+    } catch (error) {
+      console.error('Error deleting university:', error);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        `Unable to delete university . ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

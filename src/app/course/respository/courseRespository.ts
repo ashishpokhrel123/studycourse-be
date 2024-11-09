@@ -116,8 +116,10 @@ export class CourseRepository {
     newStudyLevelDto.slug = slug;
     newStudyLevelDto.description = level.levelDescription;
     newStudyLevelDto.otherDescription = level.levelOtherDescription;
-    existingStudyLevel = await this.studyLevelRepository.createStudyLevel(newStudyLevelDto);
-  return existingStudyLevel;
+    existingStudyLevel = await this.studyLevelRepository.createStudyLevel(
+      newStudyLevelDto,
+    );
+    return existingStudyLevel;
   }
 
   private async createOrUpdateSubjects(
@@ -195,7 +197,7 @@ export class CourseRepository {
       // Fetch or create study level
       if (levels) {
         const studyLevel = await this.fetchOrCreateStudyLevel(levels);
-        console.log(studyLevel,"sl")
+        console.log(studyLevel, 'sl');
         existingCourse.studyLevel = studyLevel;
       }
 
@@ -258,10 +260,12 @@ export class CourseRepository {
       const subject = await this.courseRepository
         .createQueryBuilder('course')
         .leftJoinAndSelect('course.studyLevel', 'studyLevel')
-        .leftJoinAndSelect('course.subject', 'subject')
+        // .leftJoinAndSelect('course.subject', 'subject')
         .leftJoinAndSelect('course.universities', 'university')
-        .leftJoinAndSelect('university.destination', 'destination')
-        .leftJoinAndSelect('university.financeDetails', 'financeDetails')
+        .leftJoinAndSelect('university.courseSubject', 'courseSubject')
+        .leftJoinAndSelect('courseSubject.course', 'courses')
+        .leftJoinAndSelect('courseSubject.subject', 'subject')
+        .leftJoinAndSelect('courses.financeDetails', 'financeDetails')
         .where('course.slug = :course', { course })
         .getOne();
       console.log(subject, 'sub');

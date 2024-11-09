@@ -9,6 +9,7 @@ import {
   UseGuards,
   Query,
   Put,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -320,15 +321,78 @@ export class UniversityController {
     type: CreateSuccessResponse,
   })
   async fetchUniversityBySubject(@Param('id') id: string): Promise<any> {
-    console.log(id,"id")
+    console.log(id, 'id');
     try {
       const university = await this.universityService.fetchSubjectsByUniversity(
-        id
+        id,
       );
-      return university
+      return university;
     } catch (error) {
       throw new HttpException(
         'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('unisubjects/:universitySlug/:courseSlug')
+  @ApiOperation({
+    summary: 'Fetch subjects by university and course slugs',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'University and course subjects fetched successfully',
+    type: CreateSuccessResponse,
+  })
+  async fetchSubjectsByUniversityAndCourseSlug(
+    @Param('universitySlug') universitySlug: string,
+    @Param('courseSlug') courseSlug: string,
+  ): Promise<any> {
+    try {
+      // Call the service method with both slugs
+      const university =
+        await this.universityService.fetchSubjectsByUniversityAndCourseSlug(
+          universitySlug,
+          courseSlug,
+        );
+      return university;
+    } catch (error) {
+      // Log the error and return a 500 response
+      console.error(
+        `Error fetching subjects for university: ${universitySlug} and course: ${courseSlug}`,
+        error,
+      );
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete a university by ID',
+    description: 'Delete a university using its ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'University deleted successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'University not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error',
+  })
+  async deleteUniversity(@Param('id') id: string): Promise<any> {
+    try {
+      const result = await this.universityService.deleteUniversity(id);
+      return CreateSuccessResponse(result);
+    } catch (error) {
+      throw new HttpException(
+        `Unable to delete university with id ${id}. ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

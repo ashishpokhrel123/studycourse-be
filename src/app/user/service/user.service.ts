@@ -5,39 +5,49 @@ import { ScUser } from 'src/common/entities/user.entity';
 
 @Injectable()
 export class UserService {
-    constructor(private readonly userRepository: UserRepository) {}
+  constructor(private readonly userRepository: UserRepository) {}
   async getProfile(userId: string): Promise<{
     status: number;
     message: string;
     data: {
-      id:string;
+      id: string;
       firstName: string;
       lastName: string;
       email: string;
       photoPath: string;
       gender: string;
       phone: string;
-      role:string;
+      role: string;
       lastActive: Date;
     };
   }> {
     const user = await this.userRepository.findUserById(userId);
-    console.log(user, "user")
+    console.log(user, 'user');
 
-    const {id, firstName, lastName, email, photoPath, gender, phone, lastActive, role } = user;
+    const {
+      id,
+      firstName,
+      lastName,
+      email,
+      photoPath,
+      gender,
+      phone,
+      lastActive,
+      role,
+    } = user;
     return {
       status: HttpStatus.OK,
       message: 'Profile fetech succesfully',
       data: {
-        id: id ? id: null,
+        id: id ? id : null,
         firstName: firstName ? firstName : null,
         lastName: lastName ? lastName : null,
         email: email ? email : null,
         photoPath: photoPath ? photoPath : null,
         gender: gender ? gender : null,
         phone: phone ? phone : '',
-        lastActive:lastActive ? lastActive :null,
-        role: role ? role: null
+        lastActive: lastActive ? lastActive : null,
+        role: role ? role : null,
       },
     };
   }
@@ -48,44 +58,48 @@ export class UserService {
   }> {
     const newUser = await this.userRepository.addUser(register);
     return newUser;
-    
-    
   }
-   async fetchUser(): Promise<any> {
+  async fetchUser(): Promise<any> {
     const users = await this.userRepository.fetchUser();
-    console.log(users, "users")
+    console.log(users, 'users');
     return users;
-    
-    
   }
 
   async addUser(register: any): Promise<{
     status: number;
     message: string;
   }> {
-  const newUser = await this.userRepository.addUser(register);
+    const newUser = await this.userRepository.addUser(register);
     return newUser;
-    
-    
   }
 
-   async addNewUser(register: any): Promise<{
+  async addNewUser(register: any): Promise<{
     status: number;
     message: string;
   }> {
-    console.log(register, "register")
-    const newUser = await this.userRepository.addNewUser(register.data);
+    console.log(register, 'register');
+    const newUser = await this.userRepository.addNewUser(register);
     return newUser;
-    
-    
   }
 
-    async fetchAllUser(): Promise<any> {
+  async fetchAllUser(): Promise<any> {
     const users = await this.userRepository.fetchAllUser();
-    console.log(users, "users")
+    console.log(users, 'users');
     return users;
-    
-    
   }
-  
+
+  async fetchUserById(id: string): Promise<any> {
+    const users = await this.userRepository.fetchUserById(id);
+    return users;
+  }
+
+  async updateUserRole(id: string, role: string): Promise<any> {
+    const users = await this.userRepository.updateUserRole(id, role);
+    return users;
+  }
+
+  async updateUser(id, data: any): Promise<any> {
+    const users = await this.userRepository.updateUser(id, data);
+    return users;
+  }
 }
