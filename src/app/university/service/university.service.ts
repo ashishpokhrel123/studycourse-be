@@ -15,9 +15,6 @@ export class UniversityService {
     try {
       const {
         universityName,
-        // universityAddress,
-        // universityContactNumber,
-        // universityEmail,
         slug,
         description,
         otherDescription,
@@ -83,6 +80,7 @@ export class UniversityService {
         });
 
       return updatedUniversity;
+      return true;
     } catch (error) {
       console.log(error);
       throw new HttpException(
@@ -240,12 +238,11 @@ export class UniversityService {
   }
 
   async fetchSubjectsByUniversityAndCourseSlug(
-    universitySlug: string,
     courseSlug: string,
   ): Promise<any> {
     try {
       // Validate that both slugs are provided
-      if (isEmpty(universitySlug) || isEmpty(courseSlug)) {
+      if (isEmpty(courseSlug)) {
         throw new HttpException(
           'Both universitySlug and courseSlug parameters are required.',
           HttpStatus.BAD_REQUEST,
@@ -254,13 +251,13 @@ export class UniversityService {
 
       // Fetch subjects based on university and course slugs
       return await this.universityRepository.fetchSubjectsByUniversityAndCourseSlug(
-        universitySlug,
+        
         courseSlug,
       );
     } catch (error) {
       // Handle specific known errors if necessary (e.g., QueryFailedError)
       console.error(
-        `Error fetching subjects for university: ${universitySlug} and course: ${courseSlug}`,
+        `Error fetching subjects for university for course: ${courseSlug}`,
         error,
       );
 

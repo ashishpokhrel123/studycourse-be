@@ -9,7 +9,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { FinanceDetails } from './financeDetails-university.entity';
+// import { FinanceDetails } from './financeDetails-university.entity';
 import { Destination } from './destination';
 import { Course } from './course.entity';
 import { UniversityCampuses } from './university-campuses.entity';
@@ -39,13 +39,15 @@ export class University {
   @Column()
   description: string;
 
+
+
   @Column({ default: false })
   isFeatured: boolean;
 
   
 
-  @OneToOne(() => FinanceDetails, (fd) => fd.university) // specify inverse side as a second parameter
-  financeDetails: FinanceDetails;
+  // @OneToOne(() => FinanceDetails, (fd) => fd.university) // specify inverse side as a second parameter
+  // financeDetails: FinanceDetails;
 
   @OneToMany(() => UniversityCourseSubject, (ucs) => ucs.university) // specify inverse side as a second parameter
   courseSubject: UniversityCourseSubject;
@@ -62,8 +64,8 @@ export class University {
   @Column({ nullable: true, type: 'timestamptz' })
   createdAt: Date;
 
-  @ManyToMany(() => Course, (course) => course.universities)
-  courses: Course[];
+  // @ManyToMany(() => Course, (course) => course.universities)
+  // courses: Course[];
 
   @Column({ nullable: true })
   createdBy: string;

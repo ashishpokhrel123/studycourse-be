@@ -1,62 +1,62 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Course } from './course.entity';
-import { UniversityCourseSubject } from './university-course-subject.entity';
+// import {
+//   Column,
+//   Entity,
+//   JoinColumn,
+//   ManyToOne,
+//   OneToMany,
+//   OneToOne,
+//   PrimaryGeneratedColumn,
+// } from 'typeorm';
+// import { Course } from './course.entity';
+// import { UniversityCourseSubject } from './university-course-subject.entity';
 
-@Entity()
-export class Subject {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+// @Entity()
+// export class Subject {
+//   @PrimaryGeneratedColumn('uuid')
+//   id: string;
 
-  @Column()
-  subjectName: string;
+//   @Column()
+//   subjectName: string;
 
-  @Column({nullable:true})
-  description: string;
+//   @Column({nullable:true})
+//   description: string;
 
-  @Column({ default: false })
-  isFeatured: boolean;
+//   @Column({ default: false })
+//   isFeatured: boolean;
 
-  @ManyToOne(() => Course, (course) => course.subject)
-  course: Course;
+//   @ManyToOne(() => Course, (course) => course.subject)
+//   course: Course;
 
-  @OneToMany(() => UniversityCourseSubject, (ucs) => ucs.subject)
-  universityCourseSubject: UniversityCourseSubject;
+//   @OneToMany(() => UniversityCourseSubject, (ucs) => ucs.subject)
+//   universityCourseSubject: UniversityCourseSubject;
 
-  @Column({ nullable: true})
-  startDate: Date;
+//   @Column({ nullable: true})
+//   startDate: Date;
 
-  @Column({ nullable: true})
-  duration: number;
+//   @Column({ nullable: true})
+//   duration: number;
 
-  @Column({ nullable: true, type: 'timestamptz' })
-  createdAt: Date;
+//   @Column({ nullable: true, type: 'timestamptz' })
+//   createdAt: Date;
 
-  @Column({ nullable: true })
-  createdBy: string;
+//   @Column({ nullable: true })
+//   createdBy: string;
 
-  @Column({ nullable: true, type: 'timestamptz' })
-  updatedAt: Date;
+//   @Column({ nullable: true, type: 'timestamptz' })
+//   updatedAt: Date;
 
-  @Column({ nullable: true })
-  updatedBy: string;
+//   @Column({ nullable: true })
+//   updatedBy: string;
 
-  @Column({ nullable: true, type: 'timestamptz' })
-  deletedAt: Date;
+//   @Column({ nullable: true, type: 'timestamptz' })
+//   deletedAt: Date;
 
-  @Column({ nullable: true })
-  deletedBy: string;
+//   @Column({ nullable: true })
+//   deletedBy: string;
 
-  @Column({ default: true })
-  isActive: boolean;
+//   @Column({ default: true })
+//   isActive: boolean;
 
-  @Column({ default: false })
-  isDelete: boolean;
-}
+//   @Column({ default: false })
+//   isDelete: boolean;
+// }

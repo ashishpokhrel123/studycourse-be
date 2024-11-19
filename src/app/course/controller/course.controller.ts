@@ -28,6 +28,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
 import { Course } from 'src/common/entities/course.entity';
+import { UpdateCourseCategoryDto } from '../dto/update-course-category.dto';
 
 @ApiTags('Course')
 @Controller('courses')
@@ -248,7 +249,10 @@ export class CourseController {
   async getCourseCategories(): Promise<any> {
     try {
       const categories = await this.courseService.getCourseCategories();
-      return CreateSuccessResponse('Categories fetched successfully', categories);
+      return CreateSuccessResponse(
+        'Categories fetched successfully',
+        categories,
+      );
     } catch (error) {
       throw new HttpException(
         'Internal Server Error',
@@ -268,8 +272,12 @@ export class CourseController {
   })
   async getCategoriesWithCourses(): Promise<any> {
     try {
-      const categoriesWithCourses = await this.courseService.getCategoriesWithCourses();
-      return CreateSuccessResponse('Categories with courses fetched successfully', categoriesWithCourses);
+      const categoriesWithCourses =
+        await this.courseService.getCategoriesWithCourses();
+      return CreateSuccessResponse(
+        'Categories with courses fetched successfully',
+        categoriesWithCourses,
+      );
     } catch (error) {
       throw new HttpException(
         'Internal Server Error',
@@ -278,6 +286,39 @@ export class CourseController {
     }
   }
 
-  
-}
+  @Get('categories/:id')
+  async getCourseCategoryById(@Param('id') id: string): Promise<any> {
+    try {
+      const category = await this.courseService.getCategoriesById(id);
+      return category;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Error in controller:', error);
+      throw new HttpException(
+        'Failed to fetch course category',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
+  @Put('categories/update')
+  async updateCourseCategoryById(
+    @Param('id') id: string,
+    @Body() updateData: UpdateCourseCategoryDto,
+  ): Promise<any> {
+    try {
+      return await this.courseService.updateCourseCategory(updateData);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Error in controller:', error);
+      throw new HttpException(
+        'Failed to update course category',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}

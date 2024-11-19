@@ -335,7 +335,7 @@ export class UniversityController {
     }
   }
 
-  @Get('unisubjects/:universitySlug/:courseSlug')
+  @Get('unisubjects/:courseSlug')
   @ApiOperation({
     summary: 'Fetch subjects by university and course slugs',
   })
@@ -345,21 +345,19 @@ export class UniversityController {
     type: CreateSuccessResponse,
   })
   async fetchSubjectsByUniversityAndCourseSlug(
-    @Param('universitySlug') universitySlug: string,
     @Param('courseSlug') courseSlug: string,
   ): Promise<any> {
     try {
       // Call the service method with both slugs
       const university =
         await this.universityService.fetchSubjectsByUniversityAndCourseSlug(
-          universitySlug,
           courseSlug,
         );
       return university;
     } catch (error) {
       // Log the error and return a 500 response
       console.error(
-        `Error fetching subjects for university: ${universitySlug} and course: ${courseSlug}`,
+        `Error fetching subjects for  course: ${courseSlug}`,
         error,
       );
       throw new HttpException(

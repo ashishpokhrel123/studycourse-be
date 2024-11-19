@@ -5,6 +5,7 @@ import { CourseRepository } from '../respository/courseRespository';
 import { isEmpty } from 'class-validator';
 import slugify from 'slugify';
 import { Course } from 'src/common/entities/course.entity';
+import { UpdateCourseCategoryDto } from '../dto/update-course-category.dto';
 
 @Injectable()
 export class CourseService {
@@ -176,6 +177,30 @@ export class CourseService {
    async getCategoriesWithCourses(): Promise<any> {
     try {
       const categories = await this.courseRepository.fetchCategoriesWithCourses();
+      return categories
+    } catch (error) {
+      throw new HttpException(
+        'Failed to fetch categories with courses',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getCategoriesById(id:string): Promise<any> {
+    try {
+      const categories = await this.courseRepository.fetchCourseCategoryById(id);
+      return categories
+    } catch (error) {
+      throw new HttpException(
+        'Failed to fetch categories with courses',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+   async updateCourseCategory(data:UpdateCourseCategoryDto): Promise<any> {
+    try {
+      const categories = await this.courseRepository.updateCourseCategoryById(data);
       return categories
     } catch (error) {
       throw new HttpException(

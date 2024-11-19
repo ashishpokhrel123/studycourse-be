@@ -40,13 +40,12 @@ export class CourseDetailsDto {
   @IsString()
   courseId: string;
 
-  @ApiProperty({ description: 'The destination ID of the university' })
-  @IsArray()
-  subjects: SubjectDto[];
-
-  @ApiProperty({ description: 'The tuition fee of the university' })
+  @ApiProperty({ description: 'The contents fee of the course' })
   @IsNotEmpty()
-  financeDetails: CampusesDto[];
+  @IsString()
+  courseContents: string;
+
+ 
 
  
 }

@@ -69,13 +69,18 @@ export class CourseDetailsDto {
   @IsString()
   courseId: string;
 
-  @ApiProperty({ description: 'Subjects of the course' })
-  @IsNotEmpty()
-  subjects: SubjectDto[];
+  // @ApiProperty({ description: 'Subjects of the course' })
+  // @IsNotEmpty()
+  // subjects: SubjectDto[];
 
-  @ApiProperty({ description: 'Finance details related to the course' })
+  // @ApiProperty({ description: 'Finance details related to the course' })
+  // @IsNotEmpty()
+  // financeDetails: FinanceDetailsDto[];
+
+   @ApiProperty({ description: 'The contents fee of the course' })
   @IsNotEmpty()
-  financeDetails: FinanceDetailsDto[];
+  @IsString()
+  courseContents: string;
 }
 
 // DTO for Updating a University

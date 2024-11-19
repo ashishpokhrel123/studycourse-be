@@ -9,7 +9,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from 'src/common/entities/course.entity';
 import { UpdateCourseDto } from '../dto/update-course.dto';
 import { StudyLevelRepository } from 'src/app/study-level/respository/studyLevel.respository';
-import { Subject } from 'src/common/entities/subject.entity';
 import slugify from 'slugify';
 import {
   CourseCategoryDTO,
@@ -26,9 +25,6 @@ export class CourseRepository {
   constructor(
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
-
-    @InjectRepository(Subject)
-    private readonly subjectRepository: Repository<Subject>,
     private readonly studyLevelRepository: StudyLevelRepository,
 
     @InjectRepository(CourseCategory)
@@ -122,48 +118,48 @@ export class CourseRepository {
     return existingStudyLevel;
   }
 
-  private async createOrUpdateSubjects(
-    subjects: any[],
-    course: Course,
-  ): Promise<void> {
-    console.log(subjects, 'subjects');
-    for (const subjectDto of subjects) {
-      let subject = await this.subjectRepository.findOne({
-        where: { subjectName: subjectDto.subjectName },
-      });
+  // private async createOrUpdateSubjects(
+  //   subjects: any[],
+  //   course: Course,
+  // ): Promise<void> {
+  //   console.log(subjects, 'subjects');
+  //   for (const subjectDto of subjects) {
+  //     let subject = await this.subjectRepository.findOne({
+  //       where: { subjectName: subjectDto.subjectName },
+  //     });
 
-      if (!subject) {
-        subject = await this.createSubject(subjectDto, course);
-      } else {
-        this.updateSubject(subject, subjectDto, course);
-      }
+  //     if (!subject) {
+  //       subject = await this.createSubject(subjectDto, course);
+  //     } else {
+  //       this.updateSubject(subject, subjectDto, course);
+  //     }
 
-      await this.subjectRepository.save(subject);
-    }
-  }
+  //     await this.subjectRepository.save(subject);
+  //   }
+  // }
 
-  private async createSubject(
-    subjectDto: any,
-    course: Course,
-  ): Promise<Subject> {
-    console.log(subjectDto, 'subjectDto');
-    return this.subjectRepository.create({
-      subjectName: subjectDto.subjectName,
-      description: subjectDto.description,
-      course: course,
-    });
-  }
+  // private async createSubject(
+  //   subjectDto: any,
+  //   course: Course,
+  // ): Promise<Subject> {
+  //   console.log(subjectDto, 'subjectDto');
+  //   return this.subjectRepository.create({
+  //     subjectName: subjectDto.subjectName,
+  //     description: subjectDto.description,
+  //     course: course,
+  //   });
+  // }
 
-  private updateSubject(
-    subject: Subject,
-    subjectDto: any,
-    course: Course,
-  ): void {
-    console.log(subject, 'subj');
-    subject.description = subjectDto.subjectName;
-    subject.description = subjectDto.description;
-    subject.course = course;
-  }
+  // private updateSubject(
+  //   subject: Subject,
+  //   subjectDto: any,
+  //   course: Course,
+  // ): void {
+  //   console.log(subject, 'subj');
+  //   subject.description = subjectDto.subjectName;
+  //   subject.description = subjectDto.description;
+  //   subject.course = course;
+  // }
 
   async updateCourse({
     id,
@@ -225,13 +221,12 @@ export class CourseRepository {
   }
 
   async fetchCourse(): Promise<any> {
-    return this.courseRepository.find({ relations: ['subject'] });
+    return this.courseRepository.find();
   }
 
   async fetchCoursePublic(): Promise<any> {
     return this.courseRepository.find({
       where: { isActive: true },
-      relations: ['subject'],
     });
   }
   async fetchCourseBySlug({ slug }: any): Promise<any> {
@@ -245,7 +240,7 @@ export class CourseRepository {
         .where('course.id = :id', { id })
         .leftJoinAndSelect('course.studyLevel', 'studyLevel')
         .leftJoinAndSelect('course.courseCategory', 'courseCategory')
-        .leftJoinAndSelect('course.subject', 'subject')
+        // .leftJoinAndSelect('course.subject', 'subject')
         .getOne();
 
       return course || null;
@@ -398,6 +393,58 @@ export class CourseRepository {
       console.error('Error fetching categories with courses:', error);
       throw new HttpException(
         'Failed to fetch categories with courses',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async fetchCourseCategoryById(id: string): Promise<CourseCategory | null> {
+    try {
+      const courseCategory = await this.courseCategoryRepository.findOne({
+        where: { id },
+      });
+      if (!courseCategory) {
+        throw new HttpException(
+          'Course category not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return courseCategory;
+    } catch (error) {
+      console.error('Error fetching course category:', error);
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateCourseCategoryById(updateData: any): Promise<any> {
+    const {id,  ...data} = updateData
+    console.log(  updateData, "while updating  data")
+    try {
+      const courseCategory = await this.courseCategoryRepository.findOne({
+        where: { id },
+      });
+
+      if (!courseCategory) {
+        throw new HttpException(
+          'Course category not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return await this.courseCategoryRepository.update(
+        courseCategory?.id,
+        data,
+      );
+    } catch (error) {
+      console.error('Error updating course category:', error);
+
+      // Throw appropriate HTTP exceptions
+      throw new HttpException(
+        'Internal Server Error',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

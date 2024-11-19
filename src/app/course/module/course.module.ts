@@ -5,16 +5,14 @@ import { CourseRepository } from '../respository/courseRespository';
 import { StudyLevelRepository } from 'src/app/study-level/respository/studyLevel.respository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Course } from 'src/common/entities/course.entity';
-import { StudyLevel } from 'src/common/entities/studyLevel.entity';
-import { Subject } from 'src/common/entities/subject.entity';
-import { SubjectRepository } from 'src/app/subject/respository/subjectRepositiry';
+import { StudyLevel } from 'src/common/entities/studyLevel.entity';;
 import { CourseCategory } from 'src/common/entities/course-category';
 
 @Module({
    imports: [
-    TypeOrmModule.forFeature([Course, StudyLevel, Subject, CourseCategory]),
+    TypeOrmModule.forFeature([Course, StudyLevel, CourseCategory]),
   ],
   controllers: [CourseController],
-  providers: [CourseService, CourseRepository, StudyLevelRepository, SubjectRepository]
+  providers: [CourseService, CourseRepository, StudyLevelRepository]
 })
 export class CourseModule {}

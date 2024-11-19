@@ -10,18 +10,16 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { StudyLevel } from './studyLevel.entity';
-import { Subject } from './subject.entity';
+// import { Subject } from './subject.entity';
 import { University } from './university.entity';
-import { FinanceDetails } from './financeDetails-university.entity';
+// import { FinanceDetails } from './financeDetails-university.entity';
 import { UniversityCourseSubject } from './university-course-subject.entity';
 import { CourseCategory } from './course-category';
 
 
 @Entity()
 export class Course {
-  push(course: Course) {
-    throw new Error('Method not implemented.');
-  }
+  
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -40,17 +38,17 @@ export class Course {
   @ManyToOne(() => StudyLevel, (studyLevel) => studyLevel.course)
   studyLevel: StudyLevel;
 
-  @OneToMany(() => Subject, (subject) => subject.course)
-  subject: Subject;
+  // @OneToMany(() => Subject, (subject) => subject.course)
+  // subject: Subject;
 
-  @ManyToMany(() => University, (university) => university.courses)
-  @JoinTable()
-  universities: University[];
+  // @ManyToMany(() => University, (university) => university.courses)
+  // @JoinTable()
+  // universities: University[];
 
-  @OneToMany(() => FinanceDetails, (financeDetails) => financeDetails.course, {
-    onDelete: 'CASCADE', // Ensure that related entries are deleted when a university is deleted
-  })
-  financeDetails: FinanceDetails[];
+  // @OneToMany(() => FinanceDetails, (financeDetails) => financeDetails.course, {
+  //   onDelete: 'CASCADE', // Ensure that related entries are deleted when a university is deleted
+  // })
+  // financeDetails: FinanceDetails[];
 
   @ManyToOne(() => CourseCategory, (cc) => cc.courses)
   courseCategory: CourseCategory;
