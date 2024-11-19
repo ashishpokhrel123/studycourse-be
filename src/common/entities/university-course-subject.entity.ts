@@ -23,7 +23,7 @@ export class UniversityCourseSubject {
   })
   course: Course;
 
-  @Column()
+  @Column({nullable:true})
   courseContents: string;
 
   // Audit fields
